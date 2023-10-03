@@ -1,0 +1,335 @@
+---
+title: "MUSA5000 Assignment 1"
+author: "Anna Duan, Jingyi Li, and Jamie Song"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    keep_md: yes
+    toc: yes
+    theme: cerulean
+    toc_float: yes
+    code_folding: hide
+    number_sections: no
+  pdf_document:
+    toc: yes
+---
+# Introduction
+```{r setup, include=TRUE, cache = TRUE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+library(dplyr)
+library(pander)
+library(sf)
+library(tidyr)
+library(lubridate)
+library(fuzzyjoin)
+library(ggplot2)
+library(tidygeocoder)
+library(mapview)
+library(tigris)
+library(FNN)
+library(janitor)
+library(stringr)
+library(ggpubr)
+library(gridExtra)
+library(ggcorrplot)
+
+# Load themes for maps and plots (you can edit these)
+mapTheme <- function(base_size = 12) {
+  theme(
+    text = element_text(color = "black", family="Helvetica"),
+    plot.title = element_text(colour = "black", hjust=0),
+    plot.subtitle=element_text(face="italic", hjust = 0),
+    plot.caption=element_text(size = 7, hjust = 0),
+    axis.ticks = element_blank(),
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    legend.background = element_blank(),
+    legend.position= c(0.8, 0.2)
+  )
+}
+
+plotTheme <- function(base_size = 12) {
+  theme(
+    text = element_text(color = "black"),
+    plot.title = element_text(colour = "black"),
+    plot.subtitle = element_text(face="italic"),
+    plot.caption = element_text(hjust=0),
+    axis.ticks = element_blank(),
+    panel.background = element_blank(),
+    panel.grid.major = element_line("grey80", size = 0.1),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    strip.background = element_blank(),
+    strip.text = element_text(size=12),
+    axis.title = element_text(size=10),
+    axis.text = element_text(size=8),
+    plot.background = element_blank(),
+    legend.background = element_blank(),
+    legend.title = element_text(colour = "black", face = "italic"),
+    legend.text = element_text(colour = "black", face = "italic"),
+    strip.text.x = element_text(size = 10)
+  )
+} 
+```
+
+# Methods 
+```{r read data, message=FALSE, warning=FALSE, cache=TRUE, include=FALSE}
+dat <- read.csv("RegressionData.csv")
+
+pander::pander(head(dat %>% dplyr::select(AREAKEY, MEDHVAL, PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES,
+                                    NBELPOV100)), caption = "Variables of interest")
+  
+dat.sf <- st_read("regression data shapefile/RegressionData.shp")
+```
+
+# Exploratory data analysis  
+## Summary statistics
+```{r summary statistics, warning = FALSE, message = FALSE, cache = TRUE}
+sum_stat <- function(var) {
+  dat <- 
+  dat %>%
+    dplyr::select(var) %>%
+    mutate(variable = var) %>%
+    group_by(variable) %>%
+    summarize(quartile_1 = quantile(dat[var], probs = 0.25, na.rm = TRUE),
+           median = quantile(dat[var], probs = 0.5, na.rm = TRUE),
+           mean = mean(dat[[var]], na.rm = TRUE),
+           quartile_3 = quantile(dat[var], probs = 0.75, na.rm = TRUE),
+           max = max(dat[var], na.rm = TRUE),
+           sd = sd(dat[[var]], na.rm = TRUE)) 
+  return(dat)
+  }
+
+medhval_summ <- sum_stat("MEDHVAL")
+pctbachmorr_summ <- sum_stat("PCTBACHMOR")
+medhhinc_summ <- sum_stat("MEDHHINC")
+pctvacant_summ <- sum_stat("PCTVACANT")
+pctsingles_summ <- sum_stat("PCTSINGLES")
+nbelpov100_summ <- sum_stat("NBELPOV100")
+
+dat.stat <- rbind(medhval_summ,
+                  pctbachmorr_summ,
+                  medhhinc_summ,
+                  pctvacant_summ,
+                  pctsingles_summ,
+                  nbelpov100_summ) 
+
+pander(dat.stat, caption = "Summary Statistics")
+```
+
+## Histograms 
+```{r histograms, fig.height=9, fig.width=13, message=FALSE, warning=FALSE, cache=TRUE}
+
+grid.arrange(
+ggplot(dat %>% filter(MEDHVAL <= 152525), aes(x = MEDHVAL)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "orchid", bins = 50) +
+  labs(title = "Median Home Value ($)", y = "", x = "Dollars") +
+  plotTheme(),
+
+ggplot(dat %>% filter(PCTBACHMOR <= 59.13698), aes(x = PCTBACHMOR)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "navy", bins = 50) +
+  labs(title = "Individuals with Bachelor’s Degrees or Higher (%)", y = "", x = "Percent") +
+  plotTheme(),
+
+ggplot(dat %>% filter(MEDHHINC <= 56444.9), aes(x = MEDHHINC)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "navy", bins = 50) +
+  labs(title = "Median Household Income", y = "Block groups (n = 1720)", x = "Dollars") +
+  plotTheme(),
+
+ggplot(dat %>% filter(PCTVACANT <= 28.5154), aes(x = PCTVACANT)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "navy", bins = 50) +
+  labs(title = "Vacant Houses (%)", y = "", x = "Percent") +
+  plotTheme(),
+
+ggplot(dat %>% filter(PCTSINGLES <= 30.68176), aes(x = PCTSINGLES)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "navy", bins = 50) +
+  labs(title = "Single House Units (%)", y = "", x = "Percent") +
+  plotTheme(),
+
+ggplot(dat %>% filter(NBELPOV100 <= 514.05), aes(x = NBELPOV100)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "navy", bins = 50) +
+  labs(title = "Households Living in Poverty", y = "", x = "Households") +
+  plotTheme(),
+top = "Histogram of independent variables")
+```
+
+## Log transformed histograms 
+After log-transformation, the dependent variable (Median Home Value) has a roughly normal distribution, so we will use LNMEDHVAL in our analysis. Of the independent variables, log-transformation only normalizes NBELPOV100 (Households living in poverty), so we will only use the log-transformed values for this variable and un-transformed values for the others.
+```{r log transform, fig.height=9, fig.width=13, message=FALSE, warning=FALSE, cache=TRUE}
+dat.log <- dat %>%
+  mutate(LNMEDHVAL = log(MEDHVAL),
+         LNPCTBACHMOR = log(1 + PCTBACHMOR), #adding one for variables with 0 values
+         LNMEDHHINC = log(MEDHHINC),
+         LNPCTVACANT = log(1 + PCTVACANT),
+         LNPCTSINGLES = log(1 + PCTSINGLES),
+         LNNBELPOV100 = log(1 + NBELPOV100))
+
+grid.arrange(
+ggplot(dat.log, aes(x = LNMEDHVAL)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "orchid", bins = 50) +
+  labs(title = "Median Home Value ($)", y = "", x = "Dollars") +
+  plotTheme(),
+
+ggplot(dat.log, aes(x = LNPCTBACHMOR)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "navy", bins = 50) +
+  labs(title = "Individuals with Bachelor’s Degrees or Higher (%)", y = "", x = "Percent") +
+  plotTheme(),
+
+ggplot(dat.log, aes(x = LNMEDHHINC)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "navy", bins = 50) +
+  labs(title = "Median Household Income", y = "Block groups (n = 1720)", x = "Dollars") +
+  plotTheme(),
+
+ggplot(dat.log, aes(x = LNPCTVACANT)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "navy", bins = 50) +
+  labs(title = "Vacant Houses (%)", y = "", x = "Percent") +
+  plotTheme(),
+
+ggplot(dat.log, aes(x = LNPCTSINGLES)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "navy", bins = 50) +
+  labs(title = "Single House Units (%)", y = "", x = "Percent") +
+  plotTheme(),
+
+ggplot(dat.log, aes(x = LNNBELPOV100)) + # filtering for outliers, keeping 95%
+  geom_histogram(fill = "navy", bins = 50) +
+  labs(title = "Households Living in Poverty", y = "", x = "Households") +
+  plotTheme(),
+top = "Histogram of log-transformed independent variables")
+```
+
+## Scatter plots
+```{r scatter, fig.height=7, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
+cor.long <- dat.log %>%
+  dplyr::select(LNMEDHVAL, PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES, LNNBELPOV100) %>%
+  gather(Variable, Value, -LNMEDHVAL) %>%
+  mutate(Value = as.numeric(Value))
+
+cor.cor <-
+  cor.long %>%
+    group_by(Variable) %>%
+    summarize(correlation = cor(Value, LNMEDHVAL, use = "complete.obs"))
+
+ggplot(cor.long, aes(Value, LNMEDHVAL)) +
+  geom_point(size = 0.1, color = "navy", alpha = 0.4) +
+  geom_text(data = cor.cor, aes(label = paste("r =", round(correlation, 2))),
+            x=-Inf, y=Inf, vjust = 1.5, hjust = -.1, size = 4) +
+  geom_smooth(method = "lm", se = FALSE, color = "orchid", linewidth = 0.5) +
+  facet_wrap(~Variable, ncol = 3, scales = "free") +
+  plotTheme() + 
+  labs(title = "Median Home Value as a Function of Independent Variables", subtitle = "Philadelphia, PA Block Groups; n = 1720") 
+```
+
+## Correlation matrix  
+Median household income is strongly correlated with log-transformed number of households living in poverty. We should only include one to avoid multicollinearity.  
+```{r corr matrix, fig.height=8, fig.width=8, message=FALSE, warning=FALSE, cache=TRUE}
+
+dat.corplot <- dat.log %>%
+  dplyr::select(-POLY_ID, -AREAKEY, -MEDHVAL, -LNPCTBACHMOR, -LNMEDHHINC, -LNPCTVACANT, -LNPCTSINGLES, -NBELPOV100)
+
+ggcorrplot(round(cor(dat.corplot %>% na.omit()), 1),
+  p.mat = cor_pmat(dat.corplot %>% na.omit()),
+  colors = c("navy", "white", "orchid1"),
+  type="lower",
+  insig = "blank",
+  show.legend = FALSE,
+  lab = TRUE) +  
+    labs(title = "Log-transformed median home value correlation with independent variables") 
+```
+
+## Chloropleth maps
+```{r maps, fig.height=11, fig.width=13, message=FALSE, warning=FALSE, cache=TRUE}
+grid.arrange(
+ggplot(dat.sf) +
+  geom_sf(aes(fill = LNMEDHVAL), color = "transparent") +
+  scale_fill_viridis_c(option = "A", direction = 1) +
+  labs(title = "Log-transformed median home value") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2)),
+
+ggplot(dat.sf) +
+  geom_sf(aes(fill = PCTVACANT), color = "transparent") +
+  scale_fill_viridis_c(option = "A", direction = 1) +
+  labs(title = "Vacant homes (%)") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2)),
+
+ggplot(dat.sf) +
+  geom_sf(aes(fill = PCTSINGLES), color = "transparent") +
+  scale_fill_viridis_c(option = "A", direction = 1) +
+  labs(title = "Single home units (%)") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2)),
+
+ggplot(dat.sf) +
+  geom_sf(aes(fill = PCTBACHMOR), color = "transparent") +
+  scale_fill_viridis_c(option = "A", direction = 1) +
+  labs(title = "Individuals with bachelors or more (%)") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2)),
+
+ggplot(dat.sf) +
+  geom_sf(aes(fill = LNNBELPOV), color = "transparent") +
+  scale_fill_viridis_b(option = "A", direction = 1) +
+  labs(title = "Log-transformed households in poverty") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2)), ncol = 3)
+```
+
+# Multiple Regression Analysis
+## Regression results 
+```{r reg}
+# Assuming there’s no severe multicollinearity, use the lm command to run
+# the regression where LNMEDHVAL is the dependent variable and
+# PCTVACANT, PCTSINGLES, PCTBACHMOR, and LNNBELPOV100 are
+# predictors.
+# 
+# In your report, be sure to present the summary of the fit as well as the
+# ANOVA table containing the regression and error sum of squares (use the
+# summary and anova commands). The only thing you should be looking at in
+# the output from the anova command is the error sum of squares, and not
+# any of the p-values.
+# 
+# c. Use the fitted, residuals and rstandard commands to save the predicted
+# values, residuals and standardized residuals, respectively.
+```
+
+# Regression Assumption Checks 
+## Scatterplot of standardized residuals
+```{r }
+# Create a scatter plot with Standardized Residuals on the y-axis and
+# Predicted Values on the x-axis. You will be asked to present this scatter plot
+# in your report, so take a screenshot of it if you plan to use MS Word.
+```
+
+## Additional Models
+```{r stepwise and AIC}
+#Use the step and step$anova commands in the MASS library to run stepwise
+# regression and determine the best model based on the Akaike Information
+# Criterion.
+```
+
+## K-folds cross validation
+```{r k-folds cv}
+#Perform k-fold cross-validation (in which k = 5) using the CVlm command in the
+# DAAG library and calculate the root mean square error (RMSE). Then re-run the
+# regression model only using PCTVACANT and MEDHHINC as predictors, and again
+# perform k-fold cross-validation in which k = 5. You will be asked to present the
+# RMSE of both this model and the original model in your report.
+```
+
+## Histogram and chloropleth map of residuals
+```{r residuals}
+#histogram and a choropleth map of standardized regression
+#residuals that you saved using the rstandard command earlier
+```
+
+# Discussion and Limitations 
+
