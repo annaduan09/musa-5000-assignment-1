@@ -36,6 +36,9 @@ library(stringr)
 library(ggpubr)
 library(gridExtra)
 library(ggcorrplot)
+library(car)
+library(MASS)
+library(DAAG)
 
 # Load themes for maps and plots (you can edit these)
 mapTheme <- function(base_size = 12) {
@@ -299,14 +302,31 @@ ggplot(dat.sf) +
 # 
 # c. Use the fitted, residuals and rstandard commands to save the predicted
 # values, residuals and standardized residuals, respectively.
+
+reg <- lm(LNMEDHVAL ~ PCTVACANT + PCTSINGLES + PCTBACHMOR + LNNBELPOV100, data=dat.log)
+summary(reg)
+anova(reg)
+#vif(reg)
+dat.log$pred_values <- fitted(reg)
+dat.log$residual_values <- residuals(reg)
+dat.log$standard_residuals <- rstandard(reg)
+
 ```
 
 # Regression Assumption Checks 
 ## Scatterplot of standardized residuals
-```{r }
+```{r scatter_standard_resid}
 # Create a scatter plot with Standardized Residuals on the y-axis and
 # Predicted Values on the x-axis. You will be asked to present this scatter plot
 # in your report, so take a screenshot of it if you plan to use MS Word.
+
+ggplot(dat.log, aes(pred_values, standard_residuals)) +
+  geom_point(size = 0.2, color = "navy", alpha = 0.4) +
+  #geom_text(data = cor.cor, aes(label = paste("r =", round(correlation, 2))),
+  #          x=-Inf, y=Inf, vjust = 1.5, hjust = -.1, size = 4) +
+  geom_smooth(method = "lm", se = FALSE, color = "orchid", linewidth = 0.5) +
+  plotTheme() + 
+  labs(title = "Standardized residuals") 
 ```
 
 ## Additional Models
@@ -314,7 +334,11 @@ ggplot(dat.sf) +
 #Use the step and step$anova commands in the MASS library to run stepwise
 # regression and determine the best model based on the Akaike Information
 # Criterion.
+
+step <- stepAIC(reg, direction="both")
+step$anova
 ```
+
 
 ## K-folds cross validation
 ```{r k-folds cv}
@@ -323,6 +347,18 @@ ggplot(dat.sf) +
 # regression model only using PCTVACANT and MEDHHINC as predictors, and again
 # perform k-fold cross-validation in which k = 5. You will be asked to present the
 # RMSE of both this model and the original model in your report.
+
+cv <- CVlm(data=dat.log, reg, m=5)
+mse <- attr(cv, "ms")
+rmse <- sqrt(mse)
+rmse #yields 0.3664 = better model
+
+reg2 <- lm(LNMEDHVAL ~ PCTVACANT + MEDHHINC, data=dat.log)
+cv2 <- CVlm(data=dat.log, reg2, m=5)
+mse2 <- attr(cv2, "ms")
+rmse2 <- sqrt(mse2)
+rmse2 #yields 0.4427
+
 ```
 
 ## Histogram and chloropleth map of residuals
