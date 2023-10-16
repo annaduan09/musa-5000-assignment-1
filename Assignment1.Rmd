@@ -370,7 +370,8 @@ ggplot(dat.log, aes(standard_residuals)) +
   plotTheme() + 
   labs(title = "Histogram of Standardized Residuals")
 
-dat.sf<-merge(dat.log,dat.sf,by="POLY_ID")
+dat.sf<-merge(dat.log,dat.sf,by="POLY_ID")%>%
+  st_as_sf()
 
 ggplot(dat.sf) +
   geom_sf(aes(fill = standard_residuals), color = "transparent") +
