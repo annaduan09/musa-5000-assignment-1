@@ -365,6 +365,19 @@ rmse2 #yields 0.4427
 ```{r residuals}
 #histogram and a choropleth map of standardized regression
 #residuals that you saved using the rstandard command earlier
+ggplot(dat.log, aes(standard_residuals)) +
+  geom_histogram(binwidth = 0.5, fill = "navy") +
+  plotTheme() + 
+  labs(title = "Histogram of Standardized Residuals")
+
+dat.sf<-merge(dat.log,dat.sf,by="POLY_ID")
+
+ggplot(dat.sf) +
+  geom_sf(aes(fill = standard_residuals), color = "transparent") +
+  scale_fill_viridis_b(option = "A", direction = 1) +
+  labs(title = "Chloropleth map of Standardized Residuals") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2),ncol = 3)
 ```
 
 # Discussion and Limitations 
