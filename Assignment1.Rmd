@@ -14,12 +14,13 @@ output:
     toc: yes
 ---
 # Introduction
-```{r setup, include=TRUE, cache = TRUE}
+```{r setup, include=TRUE, cache = TRUE, include = FALSE}
 knitr::opts_chunk$set(
 	echo = FALSE,
 	message = FALSE,
 	warning = FALSE
 )
+
 library(dplyr)
 library(pander)
 library(sf)
@@ -82,8 +83,20 @@ plotTheme <- function(base_size = 12) {
   )
 } 
 ```
+The ability to accurately predict house values is of great interest to real estate investors, homeowners and policymakers. This analysis examines the relationship between home sale values and select neighborhood attributes in Philadelphia.
 
-# Methods 
+In a survey of methods and input types for house price prediction, Geerts and colleagues (2023) present a set of variable types for prediction models, including structural features, temporal data, environmental features, and socioeconomic features. For this analysis, we focus on variables from the latter category, specifically the following:
+- Residents with at least a bachelor’s degree (%)
+- Housing units that are vacant (%)
+- Housing units that are detached single family houses (%)
+- Number of households with incomes below 100% poverty level
+- Median household income (%).  
+These indicators present a crude socioeconomic context for a neighborhood, and are well-documented as predictors of home prices. Indeed, it is reasonable that residents with higher educational attainment and income are able to afford more expensive homes. Conversely, it is also possible that the arrival of residents with higher socioeconomic status may lead to an eventual increase in property values. Using regression analysis, we find that __________________________. In light of this, we recommend that _________. Future research is needed _______________________.
+
+# Methods  
+## Data cleaning
+The data in this analysis comes from the US Census Bureau's American Community Survey 5 year estimates. This dataframe is aggregated at the block-group level, with 1816 original observations. We clean the data to remove block groups with populations below 40, no housing units, median house values below $10,000, and one block-group with an extreme outlier for median house value. This leaves 1720 entries in our working dataframe. We additionally load a shapefile of Philadelphia's block-groups and join it to our dataframe for analysis and visualization. 
+
 ```{r read data, message=FALSE, warning=FALSE, cache=TRUE, include=FALSE}
 dat <- read.csv("RegressionData.csv")
 
@@ -93,21 +106,22 @@ pander::pander(head(dat %>% dplyr::select(AREAKEY, MEDHVAL, PCTBACHMOR, MEDHHINC
 dat.sf <- st_read("regression data shapefile/RegressionData.shp")
 ```
 
-# Exploratory data analysis  
-## Summary statistics
-```{r summary statistics, warning = FALSE, message = FALSE, cache = TRUE}
+## Exploratory data analysis  
+### Summary statistics
+To begin our analysis, we first examine the summary statistics and distributions of our variables. The median home value (MEDHVAL) has a median value of $53,250 and a mean value of $66,288. This indicates that the data is positively skewed, with a higher share of observations below than the mean. Similarly, the independent variables (PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES, and NBELPOV100) all have lower medians than means, indicating positive skewness.  
+```{r summary statistics, message=FALSE, warning=FALSE, cache=TRUE, include=TRUE}
 sum_stat <- function(var) {
   dat <- 
   dat %>%
     dplyr::select(var) %>%
     mutate(variable = var) %>%
-    group_by(variable) %>%
     summarize(quartile_1 = quantile(dat[var], probs = 0.25, na.rm = TRUE),
            median = quantile(dat[var], probs = 0.5, na.rm = TRUE),
            mean = mean(dat[[var]], na.rm = TRUE),
            quartile_3 = quantile(dat[var], probs = 0.75, na.rm = TRUE),
            max = max(dat[var], na.rm = TRUE),
-           sd = sd(dat[[var]], na.rm = TRUE)) 
+           sd = sd(dat[[var]], na.rm = TRUE),
+           variance = var(dat[[var]], na.rm = TRUE))
   return(dat)
   }
 
@@ -128,7 +142,8 @@ dat.stat <- rbind(medhval_summ,
 pander(dat.stat, caption = "Summary Statistics")
 ```
 
-## Histograms 
+### Variable distributions 
+Looking at the variables plotted as histograms, the positive skews are evident for median home value. individuals with bachelors degrees, vacant houses, single family houses, and households in poverty. Median household income is not visibly skewed. 
 ```{r histograms, fig.height=9, fig.width=13, message=FALSE, warning=FALSE, cache=TRUE}
 
 grid.arrange(
@@ -161,10 +176,10 @@ ggplot(dat %>% filter(NBELPOV100 <= 514.05), aes(x = NBELPOV100)) + # filtering 
   geom_histogram(fill = "navy", bins = 50) +
   labs(title = "Households Living in Poverty", y = "", x = "Households") +
   plotTheme(),
-top = "Histogram of independent variables")
+top = "Histogram of analysis variables")
 ```
 
-## Log transformed histograms 
+## Log-transformed variable distributions 
 After log-transformation, the dependent variable (Median Home Value) has a roughly normal distribution, so we will use LNMEDHVAL in our analysis. Of the independent variables, log-transformation only normalizes NBELPOV100 (Households living in poverty), so we will only use the log-transformed values for this variable and un-transformed values for the others.
 ```{r log transform, fig.height=9, fig.width=13, message=FALSE, warning=FALSE, cache=TRUE}
 dat.log <- dat %>%
@@ -288,7 +303,7 @@ ggplot(dat.sf) +
 
 # Multiple Regression Analysis
 ## Regression results 
-```{r reg}
+```{r reg, message=FALSE, warning=FALSE, cache=TRUE}
 # Assuming there’s no severe multicollinearity, use the lm command to run
 # the regression where LNMEDHVAL is the dependent variable and
 # PCTVACANT, PCTSINGLES, PCTBACHMOR, and LNNBELPOV100 are
@@ -315,7 +330,7 @@ dat.log$standard_residuals <- rstandard(reg)
 
 # Regression Assumption Checks 
 ## Scatterplot of standardized residuals
-```{r scatter_standard_resid}
+```{r scatter_standard_resid, message=FALSE, warning=FALSE, cache=TRUE}
 # Create a scatter plot with Standardized Residuals on the y-axis and
 # Predicted Values on the x-axis. You will be asked to present this scatter plot
 # in your report, so take a screenshot of it if you plan to use MS Word.
@@ -330,7 +345,7 @@ ggplot(dat.log, aes(pred_values, standard_residuals)) +
 ```
 
 ## Additional Models
-```{r stepwise and AIC}
+```{r stepwise and AIC, message=FALSE, warning=FALSE, cache=TRUE}
 #Use the step and step$anova commands in the MASS library to run stepwise
 # regression and determine the best model based on the Akaike Information
 # Criterion.
@@ -341,7 +356,7 @@ step$anova
 
 
 ## K-folds cross validation
-```{r k-folds cv}
+```{r k-folds cv, echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
 #Perform k-fold cross-validation (in which k = 5) using the CVlm command in the
 # DAAG library and calculate the root mean square error (RMSE). Then re-run the
 # regression model only using PCTVACANT and MEDHHINC as predictors, and again
@@ -362,7 +377,7 @@ rmse2 #yields 0.4427
 ```
 
 ## Histogram and chloropleth map of residuals
-```{r residuals}
+```{r residuals, message=FALSE, warning=FALSE, cache=TRUE}
 #histogram and a choropleth map of standardized regression
 #residuals that you saved using the rstandard command earlier
 ggplot(dat.log, aes(standard_residuals)) +
