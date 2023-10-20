@@ -100,12 +100,40 @@ The data in this analysis comes from the US Census Bureau's American Community S
 ## Exploratory data analysis  
 To prepare for our regression analysis, we first conduct an exploratory analysis by examining summary statistics as well as distributions of our independent and dependent variables. To test for co-linearity among our predictors, we also calculate the correlations between each independent variable. The correlation is a measure of how two variables change in relation to each other. The sample correlation coefficient, r, ranges from -1, indicating a perfect negative correlation, to 1, indicating a perfect positive correlation. A positive correlation means that the two variables increase together, and a negative correlation means that one decreases as the other increase. A correlation coefficient of 0 indicates no linear relationship between the variables. The sample correlation coefficient r is calculated as follows:
 
-[INSERT FORMULA HERE]
+[[INSERT FORMULA HERE]]
 
 First, the mean values of both variables x and y are calculated. Following, we find both variables' standard deviations. For each of the n observations in the dataset, we subtract the mean of each variable (__, __) from the observation, and divide the difference (__, __) by the variable's standard deviation (__, __). We then multiply this quotient (__, __) for each observation's x and y variable and sum this product at each observation. Finally, we divide this sum by the number of observations minus 1. 
 
 ## Multiple regression analysis
-For our regression analysis, we use a multiple regression to analyze the relationship between one dependent variable (median home value) and multiple explanatory variables. In this analysis, we are able to gauge the strength of the relationship between each predictor and median home value, the direction of the relationship, and the goodness of model fit on our observations. 
+For our regression analysis, we use a multiple regression to analyze the relationship between one dependent variable (median home value) and multiple explanatory variables. Using this, we are able to gauge the strength of the relationship between each predictor and median home value, the direction of the relationship, and the goodness of model fit on our observations. Specifically, it allows us to hold individual predictors in isolation to see how, and if, median home values change in response to a unit change in the predictor.
+
+In the following formula, median household value is a function of ______________________________________________________________, where _______________.
+
+[[insert formula here]]
+
+This method makes a few assumptions:
+- x and y have a linear relationship
+- the residuals are normally distributed, random, and homoscedastic
+- observations and residuals are independent
+- y is continuous and normally distributed
+- predictors are not collinear (highly-correlated) 
+
+Assuming all these conditions are met, we need to calculate the following parameters:
+- β0
+- βk
+- σ2
+- ....
+
+
+[[need to complete this section!!]]
+
+## Additional Analyses
+### Stepwise regression
+### K-fold cross validation
+
+## Software
+All analysis in this study was completed using R packages in RStudio. 
+
 ```{r read data, message=FALSE, warning=FALSE, cache=TRUE, include=FALSE}
 dat <- read.csv("RegressionData.csv")
 
@@ -115,8 +143,9 @@ pander::pander(head(dat %>% dplyr::select(AREAKEY, MEDHVAL, PCTBACHMOR, MEDHHINC
 dat.sf <- st_read("regression data shapefile/RegressionData.shp")
 ```
 
-# Exploratory data analysis  
-## Summary statistics
+# Results
+## Exploratory results  
+### Summary statistics
 To begin our analysis, we first examine the summary statistics and distributions of our variables. The median home value (MEDHVAL) has a median value of $53,250 and a mean value of $66,288. This indicates that the data is positively skewed, with a higher share of observations below than the mean. Similarly, the independent variables (PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES, and NBELPOV100) all have lower medians than means, indicating positive skewness.  
 ```{r summary statistics, message=FALSE, warning=FALSE, cache=TRUE, include=TRUE}
 sum_stat <- function(var) {
