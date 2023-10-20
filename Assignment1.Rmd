@@ -97,6 +97,15 @@ These indicators present a crude socioeconomic context for a neighborhood, and a
 ## Data cleaning
 The data in this analysis comes from the US Census Bureau's American Community Survey 5 year estimates. This dataframe is aggregated at the block-group level, with 1816 original observations. We clean the data to remove block groups with populations below 40, no housing units, median house values below $10,000, and one block-group with an extreme outlier for median house value. This leaves 1720 entries in our working dataframe. We additionally load a shapefile of Philadelphia's block-groups and join it to our dataframe for analysis and visualization. 
 
+## Exploratory data analysis  
+To prepare for our regression analysis, we first conduct an exploratory analysis by examining summary statistics as well as distributions of our independent and dependent variables. To test for co-linearity among our predictors, we also calculate the correlations between each independent variable. The correlation is a measure of how two variables change in relation to each other. The sample correlation coefficient, r, ranges from -1, indicating a perfect negative correlation, to 1, indicating a perfect positive correlation. A correlation coefficient of 0 indicates no relationship between two variables. The sample correlation coefficient r is calculated as follows:
+
+[INSERT FORMULA HERE]
+
+First, the mean values of both variables x and y are calculated. Following, we find both variables' standard deviations. For each of the n observations in the dataset, we subtract the mean of each variable (__, __) from the observation, and divide the difference (__, __) by the variable's standard deviation (__, __). We then multiply this quotient (__, __) for each observation's x and y variable and sum this product at each observation. Finally, we divide this sum by the number of observations minus 1. 
+
+## Multiple regression analysis
+For our regression analysis, we use a multiple 
 ```{r read data, message=FALSE, warning=FALSE, cache=TRUE, include=FALSE}
 dat <- read.csv("RegressionData.csv")
 
@@ -106,8 +115,8 @@ pander::pander(head(dat %>% dplyr::select(AREAKEY, MEDHVAL, PCTBACHMOR, MEDHHINC
 dat.sf <- st_read("regression data shapefile/RegressionData.shp")
 ```
 
-## Exploratory data analysis  
-### Summary statistics
+# Exploratory data analysis  
+## Summary statistics
 To begin our analysis, we first examine the summary statistics and distributions of our variables. The median home value (MEDHVAL) has a median value of $53,250 and a mean value of $66,288. This indicates that the data is positively skewed, with a higher share of observations below than the mean. Similarly, the independent variables (PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES, and NBELPOV100) all have lower medians than means, indicating positive skewness.  
 ```{r summary statistics, message=FALSE, warning=FALSE, cache=TRUE, include=TRUE}
 sum_stat <- function(var) {
@@ -142,7 +151,7 @@ dat.stat <- rbind(medhval_summ,
 pander(dat.stat, caption = "Summary Statistics")
 ```
 
-### Variable distributions 
+## Variable distributions 
 Looking at the variables plotted as histograms, the positive skews are evident for median home value. individuals with bachelors degrees, vacant houses, single family houses, and households in poverty. Median household income is not visibly skewed. 
 ```{r histograms, fig.height=9, fig.width=13, message=FALSE, warning=FALSE, cache=TRUE}
 
