@@ -95,16 +95,28 @@ These indicators present a crude socioeconomic context for a neighborhood, and a
 
 # Methods  
 ## Data cleaning
-The data in this analysis comes from the US Census Bureau's American Community Survey 5 year estimates. This dataframe is aggregated at the block-group level, with 1816 original observations. We clean the data to remove block groups with populations below 40, no housing units, median house values below $10,000, and one block-group with an extreme outlier for median house value. This leaves 1720 entries in our working dataframe. We additionally load a shapefile of Philadelphia's block-groups and join it to our dataframe for analysis and visualization. 
+The data in this analysis comes from the US Census Bureau's American Community Survey 5 year estimates.
+
+The original dataset of block groups in Philadelphia has 1816 observations. We cleaned the data by removing the following block groups:
+1. Block groups where population < 40
+2. Block groups with no housing units
+3. Block groups where median house value is lower than $10,000
+4. One North Philadelphia block group with a very high outlier for median house value
+
+After this cleaning process, we were left with 1720 observations. We additionally load a shapefile of Philadelphia's block-groups and join it to our dataframe for analysis and visualization. 
 
 ## Exploratory data analysis  
-To prepare for our regression analysis, we first conduct an exploratory analysis by examining summary statistics as well as distributions of our independent and dependent variables. To test for co-linearity among our predictors, we also calculate the correlations between each independent variable. The correlation is a measure of how two variables change in relation to each other. The sample correlation coefficient, r, ranges from -1, indicating a perfect negative correlation, to 1, indicating a perfect positive correlation. A positive correlation means that the two variables increase together, and a negative correlation means that one decreases as the other increase. A correlation coefficient of 0 indicates no linear relationship between the variables. The sample correlation coefficient r is calculated as follows:
+To prepare for our regression analysis, we first conduct an exploratory analysis by examining summary statistics as well as distributions of our independent and dependent variables. To test for co-linearity among our predictors, we also calculate the correlations between each independent variable. The correlation is a measure of how two variables change in relation to each other. The sample correlation coefficient, $r$, ranges from -1, indicating a perfect negative correlation, to 1, indicating a perfect positive correlation. A positive correlation means that the two variables increase together, and a negative correlation means that one decreases as the other increases. A correlation coefficient of 0 indicates no linear relationship between the variables. The sample correlation coefficient $r$ is calculated as follows:
 
 [[INSERT FORMULA HERE]]
+
+As part of our exploratory data analysis process, we examine the summary statistics and distributions of variables. We will also examine the correlations between predictors. Correlation describes the statistical relationship or dependence between two variables. It is quantified using the sample correlation coefficient $r$. $r$ is calculated using the following formula: 
+$$r = \frac{n(\Sigma xy)-(\Sigma x)(\Sigma y)}{\sqrt{[n\Sigma x^{2}-(\Sigma x)^{2}][n\Sigma y^{2}-(\Sigma y)^{2}]}}$$
 
 First, the mean values of both variables x and y are calculated. Following, we find both variables' standard deviations. For each of the n observations in the dataset, we subtract the mean of each variable (__, __) from the observation, and divide the difference (__, __) by the variable's standard deviation (__, __). We then multiply this quotient (__, __) for each observation's x and y variable and sum this product at each observation. Finally, we divide this sum by the number of observations minus 1. 
 
 ## Multiple regression analysis
+
 For our regression analysis, we use a multiple regression to analyze the relationship between one dependent variable (median home value) and multiple explanatory variables. Using this, we are able to gauge the strength of the relationship between each predictor and median home value, the direction of the relationship, and the goodness of model fit on our observations. Specifically, it allows us to hold individual predictors in isolation to see how, and if, median home values change in response to a unit change in the predictor.
 
 In the following formula, median household value is a function of ______________________________________________________________, where _______________.
@@ -119,9 +131,9 @@ This method makes a few assumptions:
 - predictors are not collinear (highly-correlated) 
 
 Assuming all these conditions are met, we need to calculate the following parameters:
-- β0
-- βk
-- σ2
+- $\beta _{0}$
+- $\beta _{k}$
+- $\sigma ^{2}$
 - ....
 
 
@@ -146,7 +158,7 @@ dat.sf <- st_read("regression data shapefile/RegressionData.shp")
 # Results
 ## Exploratory results  
 ### Summary statistics
-To begin our analysis, we first examine the summary statistics and distributions of our variables. The median home value (MEDHVAL) has a median value of $53,250 and a mean value of $66,288. This indicates that the data is positively skewed, with a higher share of observations below than the mean. Similarly, the independent variables (PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES, and NBELPOV100) all have lower medians than means, indicating positive skewness.
+To begin our analysis, we first examine the summary statistics and distributions of our variables. The median home value (MEDHVAL) has a median value of \$53,250 and a mean value of \$66,288. This indicates that the data is positively skewed, with a higher share of observations below than the mean. Similarly, the independent variables (PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES, and NBELPOV100) all have lower medians than means, indicating positive skewness.
 
 In the summary statistics table, the dependent variable is the median home value (MEDHVAL), while the rest of the variables including the percentage of individuals with bachelor’s degrees or higher (PCTBACHMOR), median household income (MEDHHINC), percentage of vacant houses (PCTVACANT), percentage of single house units (PCTSINGLES), and households living in poverty (NBELPOV100) are all predictors of the dependent variable. The summary statistics table contains some key measurements, such as quantile 1, median, mean, quantile 3, maximum, and standard deviation.
 
@@ -191,8 +203,10 @@ dat.stat <- rbind(medhval_summ,
 pander(dat.stat, caption = "Summary Statistics")
 ```
 
-## Variable distributions 
-Looking at the variables plotted as histograms, the positive skews are evident for median home value. individuals with bachelors degrees, vacant houses, single family houses, and households in poverty. Median household income is not visibly skewed. 
+## Variable distributions
+
+Looking at the variables plotted as histograms, we observe positive skews for median home value, individuals with bachelors degrees, vacant houses, single family houses, and households in poverty. Median household income is not visibly skewed.
+
 ```{r histograms, fig.height=9, fig.width=13, message=FALSE, warning=FALSE, cache=TRUE}
 
 grid.arrange(
@@ -228,8 +242,10 @@ ggplot(dat %>% filter(NBELPOV100 <= 514.05), aes(x = NBELPOV100)) + # filtering 
 top = "Histogram of analysis variables")
 ```
 
-## Log-transformed variable distributions 
+## Log-transformed variable distributions
+
 After log-transformation, the dependent variable (Median Home Value) has a roughly normal distribution, so we will use LNMEDHVAL in our analysis. Of the independent variables, log-transformation only normalizes NBELPOV100 (Households living in poverty), so we will only use the log-transformed values for this variable and un-transformed values for the others.The regression we did in our assignment is all based on this log-transformed variable. The more explicit explanation of the regression assumptions will be examined in a separate section below in regression assumption checks.
+
 ```{r log transform, fig.height=9, fig.width=13, message=FALSE, warning=FALSE, cache=TRUE}
 dat.log <- dat %>%
   mutate(LNMEDHVAL = log(MEDHVAL),
@@ -315,11 +331,12 @@ ggcorrplot(round(cor(dat.corplot %>% na.omit()), 1),
 ```
 
 ## Chloropleth maps
+
 Visually interpreting the choropleth maps, the median home value and households in poverty share similarities. From the map of median home value, the region to the north of downtown Philadelphia appears darker, indicating a lower median home value. Similarly, the map of households in poverty shows yellowish clustering in the same region, indicating a higher prevalence of households in poverty. This correlation is logical because households in poverty typically cannot afford homes with high values, leading them to reside in regions with lower home values. Consequently, it is reasonable to conclude that households in poverty are strong predictors for the dependent variable of median home value.
 
-Additionally, the median home value and the percentage of individuals with a bachelor's degree or higher also exhibit similarities. The region with a lower median home value is predominantly occupied by individuals without a bachelor's degree or higher, especially in the area north of downtown Philadelphia. Conversely, the region near Mt. Airy (northwestern) displays a higher median home value and a greater percentage of individuals with a bachelor's degree or higher. This correlation aligns with the general expectation that individuals with higher education tend to have a better financial status, in contrast to those without higher education degrees. Thus, it is also reasonable to conclude that the percentage of individuals with a bachelor's degree or higher is a strong predictor for the dependent variable of median home value.
+Additionally, median home value and percentage of individuals with a bachelor's degree or higher also exhibit similarities. Regions with lower median home value are predominantly occupied by individuals without a bachelor's degree or higher, especially in North Philadelphia. Conversely, the region near Mt. Airy (NW Phila.) displays a higher median home value and a greater percentage of individuals with a bachelor's degree or higher. This correlation aligns with the general expectation that individuals with greater educational attainment tend to have better financial statuses, in contrast to those without higher education degrees. Thus, it is also reasonable to conclude that the percentage of individuals with a bachelor's degree or higher is a strong predictor for the dependent variable of median home value.
 
-Moreover, the percentage of single-home units shares similarities with median home value, but there are also variances. The higher percentage of single-home units in Mt. Airy and the northeastern region correlates with a higher median home value. However, the low percentage of single-home units downtown also suggests a high median home value. Consequently, the percentage of single-home units is not considered as strong a predictor for median home value as households in poverty and the percentage of individuals with a bachelor's degree or higher.
+Moreover, the percentage of single-home units shares similarities with median home value, but there exists some variation. The higher percentage of single-home units in Mt. Airy and the northeastern region correlates with a higher median home value. However, the low percentage of single-home units downtown also suggests a high median home value. Consequently, the percentage of single-home units is not as strong a predictor for median home value as households in poverty and the percentage of individuals with a bachelor's degree or higher.
 
 The percentage of vacant homes also shows a strong correlation with median home value. A low percentage of vacant homes is observed in areas with high median home values, while a high percentage of vacant homes is found in regions with lower median home values. Hence, the percentage of vacant homes serves as another strong predictor for median home value.
 
@@ -364,11 +381,15 @@ ggplot(dat.sf) +
 
 # Multiple Regression Analysis
 ## Regression results 
-The regression is natural logarithm median home value (LNMEDHVAL) regressed on percent of vacant house (PCTVACANT), percent of single home units (PCTSINGLES), percent of individuals with bachelor degree or higher (PCTBACHMOR), and household living in poverty (LNNBELPOV100) with logarithm transformation. PCTSINGLES and PCTBACHMOR is negatively associated with median home value and PCTVACANT and LNNBELPOV100 is positively associated with median home value. 
-The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of median home value. Same as LNNBELPOV100, a 1-unit increase in the household in poverty is associated with a decrease of 0.0789054 in the median home value. PCTSINGLES and PCTBACHMOR has the estimate of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home unit and percentage of individuals with bachelor degree and more is individually associated with an increase of 0.0029769 and 0.209098 in median home value. The std. error measures the variability and precision of the estimate. Lower values mean higher precision and vice versa. 
-The t value measures the strength of the relationship between the predictor and the dependent variable. Higher absolute t values indicate a stronger relationship. In this regression PCTBACHMOR has the highest absolute t value of 38.494 indicating its strongest relationship with median home value, and PCTSINGLES has the lowest absolute t value of 4.234 which means its least strong relationship with median home value.
-The extreme low overall p-value of 2.2 e-16 of regression coefficients suggest that PCTVACANT, PCTSINGLES, PCTBACHMOR, LNNBELPOV100 have an extremely low probability of occurring by chance and are highly significant impact on the dependent variable MEDHVAL. Thus, it is reasonable to reject the null hypothesis that the coefficients for these variables are equal to 0.
-The logarithm transformed regression model has a multiple R-square of 0.6623 and adjusted R-square of 0.6615 which means that approximately 66.23% of median home value can be explained by the predictors in the model. This result can be considered as indicating a strong relationship between the dependent variable of median home value and its predictors.
+
+The regression consists of the natural logarithm of median home value (LNMEDHVAL) regressed on percent of vacant house (PCTVACANT), percent of single home units (PCTSINGLES), percent of individuals with bachelor degree or higher (PCTBACHMOR), and household living in poverty (LNNBELPOV100) with natural log transformation. PCTSINGLES and PCTBACHMOR is negatively associated with median home value and PCTVACANT and LNNBELPOV100 is positively associated with median home value. 
+
+The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of median home value. Same as LNNBELPOV100, a 1-unit increase in the household in poverty is associated with a decrease of 0.0789054 in the median home value. PCTSINGLES and PCTBACHMOR has the estimate of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home unit and percentage of individuals with bachelor degree and more is individually associated with an increase of 0.0029769 and 0.209098 in median home value. The standard error measures the variability and precision of the estimate. Lower values mean higher precision and vice versa. 
+The t value measures the strength of the relationship between the predictor and the dependent variable. Higher absolute t values indicate a stronger relationship. In this regression, PCTBACHMOR has the highest absolute t value of 38.494 indicating its strongest relationship with median home value, and PCTSINGLES has the lowest absolute t value of 4.234, meaning it has the least strong relationship with median home value.
+
+Because the regression p-value is less than 0.0001, it suggests that PCTVACANT, PCTSINGLES, PCTBACHMOR, LNNBELPOV100 have an extremely low probability of having no relationship with the dependent variable MEDHVAL, and are therefore significant predictors of MEDHVAL. Thus, we are led to reject the null hypothesis that the coefficients for these variables are equal to 0.
+
+The logarithm transformed regression model has a multiple $R^2$ of 0.6623 and adjusted $R^2$ of 0.6615 which means that approximately 66.23% of median home value can be explained by the predictors in the model. This result can be considered as indicating a strong relationship between the dependent variable of median home value and its predictors.
 
 ```{r reg, message=FALSE, warning=FALSE, cache=TRUE}
 # Assuming there’s no severe multicollinearity, use the lm command to run
