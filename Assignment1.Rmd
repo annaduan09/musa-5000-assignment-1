@@ -294,8 +294,11 @@ ggplot(cor.long, aes(Value, LNMEDHVAL)) +
   labs(title = "Median Home Value as a Function of Independent Variables", subtitle = "Philadelphia, PA Block Groups; n = 1720") 
 ```
 
-## Correlation matrix  
-Median household income is strongly correlated with log-transformed number of households living in poverty. We should only include one to avoid multicollinearity.  
+## Correlation matrix 
+The correlation matrix generally supports the conclusions based on the visual comparison of the predictor maps, but provides a more quantitative visualization of the relationships between the predictors. 
+
+There is presence of severe multicollinearity in this correlation matrix. In this correlation matrix, high correlations between certain pairs of variables are observed. For example, the correlation coefficients between MEDHHINC and PCTBACHMOR is 0.7, as well as the correlation coefficients between PCTBACHMOR and LNMEDHVAL. This result could indicate the possibility of multicollinearity. Additionally, the high correlation coefficient between MEDHHINC and LNNBELPOV100 is 0.6 and the correlation coefficient between PCTVACANT and LNMEDHVAL is 0.5. These results of coefficients also hint at potential multicollinearity. While the correlation matrix suggests a degree of multicollinearity.
+ 
 ```{r corr matrix, fig.height=8, fig.width=8, message=FALSE, warning=FALSE, cache=TRUE}
 
 dat.corplot <- dat.log %>%
@@ -361,6 +364,12 @@ ggplot(dat.sf) +
 
 # Multiple Regression Analysis
 ## Regression results 
+The regression is natural logarithm median home value (LNMEDHVAL) regressed on percent of vacant house (PCTVACANT), percent of single home units (PCTSINGLES), percent of individuals with bachelor degree or higher (PCTBACHMOR), and household living in poverty (LNNBELPOV100) with logarithm transformation. PCTSINGLES and PCTBACHMOR is negatively associated with median home value and PCTVACANT and LNNBELPOV100 is positively associated with median home value. 
+The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of median home value. Same as LNNBELPOV100, a 1-unit increase in the household in poverty is associated with a decrease of 0.0789054 in the median home value. PCTSINGLES and PCTBACHMOR has the estimate of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home unit and percentage of individuals with bachelor degree and more is individually associated with an increase of 0.0029769 and 0.209098 in median home value. The std. error measures the variability and precision of the estimate. Lower values mean higher precision and vice versa. 
+The t value measures the strength of the relationship between the predictor and the dependent variable. Higher absolute t values indicate a stronger relationship.
+The extreme low overall p-value of 2.2 e-16 of regression coefficients suggest that PCTVACANT, PCTSINGLES, PCTBACHMOR, LNNBELPOV100 have an extremely low probability of occurring by chance and are highly significant impact on the dependent variable MEDHVAL. Thus, it is reasonable to reject the null hypothesis that the coefficients for these variables are equal to 0.
+The logarithm transformed regression model has a multiple R-square of 0.6623 and adjusted R-square of 0.6615 which means that approximately 66.23% of median home value can be explained by the predictors in the model. This result can be considered as indicating a strong relationship between the dependent variable of median home value and its predictors.
+
 ```{r reg, message=FALSE, warning=FALSE, cache=TRUE}
 # Assuming there’s no severe multicollinearity, use the lm command to run
 # the regression where LNMEDHVAL is the dependent variable and
