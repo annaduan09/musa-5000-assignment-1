@@ -493,7 +493,7 @@ step$anova
 
 ## K-folds cross validation
 
-When using k-folds cross-validation on our model, 
+When using k-folds cross-validation to compare our model to one that only incorporates PCTVACANT and MEDHHINC as predictors, we find that our model has a lower root mean square error (RMSE) than the latter model. Therefore, our model outperforms the restricted model.
 
 ```{r k-folds cv, echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
 #Perform k-fold cross-validation (in which k = 5) using the CVlm command in the
@@ -519,3 +519,4 @@ rmse2 #yields 0.4427
 
 # Discussion and Limitations 
 
+In this project, we... 
