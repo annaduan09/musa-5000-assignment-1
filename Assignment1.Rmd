@@ -367,6 +367,8 @@ ggplot(dat.sf) +
 # Multiple Regression Analysis
 ## Regression results 
 The regression consists of the natural logarithm of median home value (LNMEDHVAL) regressed on percent of vacant house (PCTVACANT), percent of single home units (PCTSINGLES), percent of individuals with bachelor degree or higher (PCTBACHMOR), and household living in poverty (LNNBELPOV100) with natural log transformation. PCTSINGLES and PCTBACHMOR is negatively associated with median home value and PCTVACANT and LNNBELPOV100 is positively associated with median home value. 
+ 
+** think we need to be careful with interpretation here because MEDHVAL is log transformed
 
 The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of median home value. Same as LNNBELPOV100, a 1-unit increase in the household in poverty is associated with a decrease of 0.0789054 in the median home value. PCTSINGLES and PCTBACHMOR has the estimate of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home unit and percentage of individuals with bachelor degree and more is individually associated with an increase of 0.0029769 and 0.209098 in median home value. The standard error measures the variability and precision of the estimate. Lower values mean higher precision and vice versa. 
 The t value measures the strength of the relationship between the predictor and the dependent variable. Higher absolute t values indicate a stronger relationship. In this regression, PCTBACHMOR has the highest absolute t value of 38.494 indicating its strongest relationship with median home value, and PCTSINGLES has the lowest absolute t value of 4.234, meaning it has the least strong relationship with median home value.
@@ -401,6 +403,9 @@ dat.log$standard_residuals <- rstandard(reg)
 ```
 
 # Regression Assumption Checks 
+
+Given the earlier variable distributions
+
 ## Scatterplot of standardized residuals
 ```{r scatter_standard_resid, message=FALSE, warning=FALSE, cache=TRUE}
 # Create a scatter plot with Standardized Residuals on the y-axis and
@@ -760,27 +765,7 @@ ggplot(dat.log, aes(x = LNNBELPOV100)) + # filtering for outliers, keeping 95%
 top = "Histogram of log-transformed independent variables")
 ```
 
-## Scatter plots
-```{r scatter, fig.height=7, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
-cor.long <- dat.log %>%
-  dplyr::select(LNMEDHVAL, PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES, LNNBELPOV100) %>%
-  gather(Variable, Value, -LNMEDHVAL) %>%
-  mutate(Value = as.numeric(Value))
 
-cor.cor <-
-  cor.long %>%
-    group_by(Variable) %>%
-    summarize(correlation = cor(Value, LNMEDHVAL, use = "complete.obs"))
-
-ggplot(cor.long, aes(Value, LNMEDHVAL)) +
-  geom_point(size = 0.1, color = "navy", alpha = 0.4) +
-  geom_text(data = cor.cor, aes(label = paste("r =", round(correlation, 2))),
-            x=-Inf, y=Inf, vjust = 1.5, hjust = -.1, size = 4) +
-  geom_smooth(method = "lm", se = FALSE, color = "orchid", linewidth = 0.5) +
-  facet_wrap(~Variable, ncol = 3, scales = "free") +
-  plotTheme() + 
-  labs(title = "Median Home Value as a Function of Independent Variables", subtitle = "Philadelphia, PA Block Groups; n = 1720") 
-```
 
 ## Correlation matrix 
 The correlation matrix generally supports the conclusions based on the visual comparison of the predictor maps, but provides a more quantitative visualization of the relationships between the predictors. 
@@ -889,7 +874,50 @@ dat.log$standard_residuals <- rstandard(reg)
 ```
 
 # Regression Assumption Checks 
+
+In this section, we will conduct tests on model assumptions. We have observed the distributions of variables earlier, and will continue to investigate these in the following figures.
+
+## Scatterplots of dependent variable and predictors
+
+The following scatterplots relate the dependent variable, LNMEDHVAL, to each predictor variable. Although a few are somewhat close, none of the relationships appear to fulfill the assumption of linearity in OLS regression.
+
+```{r scatter, fig.height=7, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
+cor.long <- dat.log %>%
+  dplyr::select(LNMEDHVAL, PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES, LNNBELPOV100) %>%
+  gather(Variable, Value, -LNMEDHVAL) %>%
+  mutate(Value = as.numeric(Value))
+
+cor.cor <-
+  cor.long %>%
+    group_by(Variable) %>%
+    summarize(correlation = cor(Value, LNMEDHVAL, use = "complete.obs"))
+
+ggplot(cor.long, aes(Value, LNMEDHVAL)) +
+  geom_point(size = 0.1, color = "navy", alpha = 0.4) +
+  geom_text(data = cor.cor, aes(label = paste("r =", round(correlation, 2))),
+            x=-Inf, y=Inf, vjust = 1.5, hjust = -.1, size = 4) +
+  geom_smooth(method = "lm", se = FALSE, color = "orchid", linewidth = 0.5) +
+  facet_wrap(~Variable, ncol = 3, scales = "free") +
+  plotTheme() + 
+  labs(title = "Logged Median Home Value as a Function of Predictor Variables", subtitle = "Philadelphia, PA Block Groups; n = 1720") 
+```
+
+## Histogram of standardized residuals
+
+The following histogram shows the frequency distribution of standardized residuals. A standardized residual represents the original residual value divided by the standard deviation of all residuals, producing a standardized value that represents the residual's distance from the line of best fit. Based on the shape of this distribution, we can estimate that residuals are distributed normally in this model. **need to check interpretation here
+
+```{r resid hist}
+ggplot(dat.log, aes(standard_residuals)) +
+  geom_histogram(binwidth = 0.5, fill = "navy") +
+  plotTheme() + 
+  labs(title = "Histogram of Standardized Residuals")
+
+```
+
 ## Scatterplot of standardized residuals
+
+The following scatterplot shows standardized residuals as a function of predicted LNMEDHVAL values. The distribution of residuals appears to demonstrate heteroscedasticity, as the variation in residuals is not uniform across predicted values. There are also a number of outlier values, which tend to be more positive towards lower predicted values and more negative towards higher predicted values.
+
 ```{r scatter_standard_resid, message=FALSE, warning=FALSE, cache=TRUE}
 # Create a scatter plot with Standardized Residuals on the y-axis and
 # Predicted Values on the x-axis. You will be asked to present this scatter plot
@@ -936,14 +964,11 @@ rmse2 #yields 0.4427
 
 ```
 
-## Histogram and chloropleth map of residuals
-```{r residuals, message=FALSE, warning=FALSE, cache=TRUE}
+## Chloropleth map of residuals
+```{r residuals map, message=FALSE, warning=FALSE, cache=TRUE}
 #histogram and a choropleth map of standardized regression
 #residuals that you saved using the rstandard command earlier
-ggplot(dat.log, aes(standard_residuals)) +
-  geom_histogram(binwidth = 0.5, fill = "navy") +
-  plotTheme() + 
-  labs(title = "Histogram of Standardized Residuals")
+
 
 dat.sf<-merge(dat.log,dat.sf,by="POLY_ID")%>%
   st_as_sf()
