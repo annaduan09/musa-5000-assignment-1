@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
 )
 
 library(dplyr)
+library(ggplot2)
 library(pander)
 library(sf)
 library(tidyr)
@@ -86,11 +87,13 @@ plotTheme <- function(base_size = 12) {
 The ability to accurately predict house values is of great interest to real estate investors, homeowners and policymakers. This analysis examines the relationship between home sale values and select neighborhood attributes in Philadelphia.
 
 In a survey of methods and input types for house price prediction, Geerts and colleagues (2023) present a set of variable types for prediction models, including structural features, temporal data, environmental features, and socioeconomic features. For this analysis, we focus on variables from the latter category, specifically the following:
-- Residents with at least a bachelor’s degree (%)
-- Housing units that are vacant (%)
-- Housing units that are detached single family houses (%)
-- Number of households with incomes below 100% poverty level
-- Median household income (%).  
+
+* Residents with at least a bachelor’s degree (%)
+* Housing units that are vacant (%)
+* Housing units that are detached single family houses (%)
+* Number of households with incomes below 100% poverty level
+* Median household income (%).  
+
 These indicators present a crude socioeconomic context for a neighborhood, and are well-documented as predictors of home prices. Indeed, it is reasonable that residents with higher educational attainment and income are able to afford more expensive homes. Conversely, it is also possible that the arrival of residents with higher socioeconomic status may lead to an eventual increase in property values. Using regression analysis, we find that __________________________. In light of this, we recommend that _________. Future research is needed _______________________.
 
 # Methods  
@@ -493,7 +496,7 @@ step$anova
 
 When using k-folds cross-validation to compare our model to one that only incorporates PCTVACANT and MEDHHINC as predictors, we find that our model has a lower root mean square error (RMSE) than the latter model. Therefore, our model outperforms the restricted model.
 
-```{r k-folds cv, echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE}
+```{r k-folds cv, echo=TRUE, message=FALSE, warning=FALSE, cache=TRUE, results='hide'}
 #Perform k-fold cross-validation (in which k = 5) using the CVlm command in the
 # DAAG library and calculate the root mean square error (RMSE). Then re-run the
 # regression model only using PCTVACANT and MEDHHINC as predictors, and again
@@ -503,14 +506,23 @@ When using k-folds cross-validation to compare our model to one that only incorp
 cv <- CVlm(data=dat.log, reg, m=5)
 mse <- attr(cv, "ms")
 rmse <- sqrt(mse)
-rmse #yields 0.3664 = better model
+#rmse #yields 0.3664 = better model
 
 reg2 <- lm(LNMEDHVAL ~ PCTVACANT + MEDHHINC, data=dat.log)
 cv2 <- CVlm(data=dat.log, reg2, m=5)
 mse2 <- attr(cv2, "ms")
 rmse2 <- sqrt(mse2)
-rmse2 #yields 0.4427
+#rmse2 #yields 0.4427
 
+```
+
+RMSE for original model:
+```{r rmse orig}
+rmse
+```
+RMSE for restricted model:
+```{r rmse restrict}
+rmse2
 ```
 
 
