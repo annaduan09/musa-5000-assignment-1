@@ -88,11 +88,11 @@ The ability to accurately predict house values is of great interest to real esta
 
 In a survey of methods and input types for house price prediction, Geerts and colleagues (2023) present a set of variable types for prediction models, including structural features, temporal data, environmental features, and socioeconomic features. For this analysis, we focus on variables from the latter category, specifically the following:
 
-* Residents with at least a bachelor’s degree (%)
-* Housing units that are vacant (%)
-* Housing units that are detached single family houses (%)
-* Number of households with incomes below 100% poverty level
-* Median household income (%).  
+* Percent of residents over 25 with at least a bachelor’s degree (PCTBACHMOR)
+* Percent of housing units that are vacant (PCTVACANT)
+* Percent of housing units that are detached single family houses (PCTSINGLES)
+* Number of households with incomes below poverty level (NBELPOV100)
+* Median household income  (MEDHHINC)
 
 These indicators present a crude socioeconomic context for a neighborhood, and are well-documented as predictors of home prices. Indeed, it is reasonable that residents with higher educational attainment and income are able to afford more expensive homes. Conversely, it is also possible that the arrival of residents with higher socioeconomic status may lead to an eventual increase in property values. Using regression analysis, we find that __________________________. In light of this, we recommend that _________. Future research is needed _______________________.
 
@@ -529,4 +529,24 @@ rmse2
 
 # Discussion and Limitations 
 
-In this project, we... 
+In this project, we built a model based on ordinary least squares regression to predict median home value using a set of demographic variables at the block group level. These variables were: percent of residents with at least a bachelor's degree, vacancy percent of homes, percent of homes that were detached single family houses, households in poverty, and median household income. To build the model, we conducted exploratory data analysis and checked regression assumptions. To test its validity, we conducted stepwise regression and k-folds cross-validation using a restricted model.
+
+> Talk about the quality of the model – that is, state if this is a good model
+overall (e.g., R2, F-ratio test), and what other predictors that we didn’t
+include in our model might be associated with our dependent variable.
+i. Looking at the stepwise regression results, did the final model
+include all 4 predictors or were some dropped? What does that tell
+you about the quality of the model?
+ii. Looking at the cross-validation results, was the RMSE better for the
+4 predictor model or the 2 predictor model?
+c) If you haven’t done that in the Results section, talk explicitly about the
+limitations of the model – that is, mention which assumptions were
+violated, and if applicable, how that may affect the model/parameter
+estimation/estimated significance.
+i. In addition, talk about the limitations of using the NBELPOV100
+variable as a predictor – that is, what are some limitations of using
+the raw number of households living in poverty rather than a
+percentage?
+d) Would it make sense to run Ridge or LASSO regression here? Explain briefly
+(~4-5 sentences) what these methods are, when they’re used, and why
+they would or would not be appropriate here.
