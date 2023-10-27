@@ -311,6 +311,7 @@ ggcorrplot(round(cor(dat.corplot %>% na.omit()), 1),
 ```
 
 ## Chloropleth maps
+To examine the spatial distribution of our variables, we plot them as chloropleth maps. 
 
 Visually interpreting the choropleth maps, the median home value and households in poverty share similarities. From the map of median home value, the region to the north of downtown Philadelphia appears darker, indicating a lower median home value. Similarly, the map of households in poverty shows yellowish clustering in the same region, indicating a higher prevalence of households in poverty. This correlation is logical because households in poverty typically cannot afford homes with high values, leading them to reside in regions with lower home values. Consequently, it is reasonable to conclude that households in poverty are strong predictors for the dependent variable of median home value.
 
@@ -323,6 +324,7 @@ The percentage of vacant homes also shows a strong correlation with median home 
 Given the high inter-correlation observed between the dependent variable, median home value, and predictors such as households in poverty, the percentage of individuals with a bachelor's degree or higher, and the percentage of vacant homes, concerns may arise regarding multicollinearity. These variables might display high correlations, posing challenges in differentiating the individual effects of each predictor on the dependent variable.
 
 ```{r maps, fig.height=11, fig.width=13, message=FALSE, warning=FALSE, cache=TRUE}
+library(gridExtra)
 grid.arrange(
 ggplot(dat.sf) +
   geom_sf(aes(fill = LNMEDHVAL), color = "transparent") +
@@ -354,7 +356,7 @@ ggplot(dat.sf) +
 
 ggplot(dat.sf) +
   geom_sf(aes(fill = LNNBELPOV), color = "transparent") +
-  scale_fill_viridis_b(option = "A", direction = 1) +
+  scale_fill_viridis_c(option = "A", direction = 1) +
   labs(title = "Log-transformed households in poverty") +
   theme_void() +
   theme(legend.position = c(0.8, 0.2)), ncol = 3)
@@ -363,13 +365,29 @@ ggplot(dat.sf) +
 # Multiple Regression Analysis
 ## Regression results 
 
-The regression consists of the natural logarithm of median home value (LNMEDHVAL) regressed on percent of vacant house (PCTVACANT), percent of single home units (PCTSINGLES), percent of individuals with bachelor degree or higher (PCTBACHMOR), and household living in poverty (LNNBELPOV100) with natural log transformation. PCTSINGLES and PCTBACHMOR is negatively associated with median home value and PCTVACANT and LNNBELPOV100 is positively associated with median home value. 
-
-The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of median home value. Same as LNNBELPOV100, a 1-unit increase in the household in poverty is associated with a decrease of 0.0789054 in the median home value. PCTSINGLES and PCTBACHMOR has the estimate of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home unit and percentage of individuals with bachelor degree and more is individually associated with an increase of 0.0029769 and 0.209098 in median home value. The standard error measures the variability and precision of the estimate, with lower values indicating higher precision. The t value measures the strength of the relationship between the predictor and the dependent variable. Higher absolute t values indicate a stronger relationship. In this regression, PCTBACHMOR has the highest absolute t value of 38.494 indicating its strongest relationship with median home value, and PCTSINGLES has the lowest absolute t value of 4.234, meaning it has the weakest relationship with median home value.
-
-Because the regression p-value is less than 0.0001, it suggests that PCTVACANT, PCTSINGLES, PCTBACHMOR, LNNBELPOV100 have an extremely low probability of having no relationship with the dependent variable MEDHVAL. Thus, we are led to reject the null hypothesis that the coefficients for these variables are equal to 0 and conclude that the variables are significant predictors of MEDHVAL.
+The regression consists of:
+- the natural logarithm of median home value (LNMEDHVAL) regressed on percent of vacant house (PCTVACANT)
+- percent of single home units (PCTSINGLES)
+- percent of individuals with bachelor degree or higher (PCTBACHMOR)
+- households living in poverty (LNNBELPOV100) with natural log transformation
 
 The logarithm transformed regression model has a multiple $R^2$ of 0.6623 and adjusted $R^2$ of 0.6615 which means that approximately 66.23% of the log-transformed values of median home value can be explained by the predictors in the model. This $R^2$ indicates a moderately strong relationship between median home value and the model predictors.
+
+### Vacancy rate and households in poverty
+PCTVACANT and LNNBELPOV100 are negatively associated with median home value, indicating that increases in vacancy and poverty rate are associated with decreases in home prices.
+
+The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of log-transformed median home value. Similarly, a 1-unit increase in the household in poverty is associated with a decrease of 0.0789054 in the median home value. In practical terms, a 1% increase in PCTSINGLES and PCTBACHMOR respectively lead to a $______ and $_____ increase in median home value. 
+
+### Single homes and bachelors degrees
+PCTSINGLES and PCTBACHMOR are positively associated with median home value, meaning that increases in educational attainment and single homes are associated with increases in home prices. 
+
+PCTSINGLES and PCTBACHMOR have the estimates of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home unit and percentage of individuals with bachelor degree is individually associated with an increase of 0.0029769 and 0.209098 in log-transformed median home value. In other words, a 1% increase in PCTSINGLES and PCTBACHMOR respectively lead to a $______ and $_____ increase in median home value. 
+
+### Accuracy
+The standard error measures the variability and precision of the estimate, with lower values indicating higher precision. The t value measures the strength of the relationship between the predictor and the dependent variable. Higher absolute t values indicate a stronger relationship. In this regression, PCTBACHMOR has the highest absolute t value of 38.494 indicating its strongest relationship with median home value, and PCTSINGLES has the lowest absolute t value of 4.234, meaning it has the weakest relationship with median home value.
+
+### Null hypothesis
+Because the regression p-value is less than 0.0001, it suggests that PCTVACANT, PCTSINGLES, PCTBACHMOR, LNNBELPOV100 have an extremely low probability of having no relationship with the dependent variable MEDHVAL. Thus, we are led to reject the null hypothesis that the coefficients for these variables are equal to 0 and conclude that the variables are significant predictors of LNMEDHVAL.
 
 ```{r reg, message=FALSE, warning=FALSE, cache=TRUE}
 # Assuming there’s no severe multicollinearity, use the lm command to run
@@ -402,7 +420,7 @@ In this section, we will conduct tests on model assumptions. We have observed th
 
 ## Scatterplots of dependent variable and predictors
 
-The following scatterplots relate the dependent variable, LNMEDHVAL, to each predictor variable. Although a few are somewhat close, none of the relationships appear to fulfill the assumption of linearity in OLS regression.
+The following scatter plots relate the dependent variable, LNMEDHVAL, to each predictor variable. Although a few are somewhat close, none of the relationships appear to fulfill the assumption of linearity in OLS regression. PCTBACHMOR, PCTSINGLES, and PCTVACANT further violate the assumption of homoscedasticity, with observably higher variance in LNMEDHVAL at lower values of each variable. 
 
 ```{r scatter, fig.height=7, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
 cor.long <- dat.log %>%
@@ -427,7 +445,7 @@ ggplot(cor.long, aes(Value, LNMEDHVAL)) +
 
 ## Histogram of standardized residuals
 
-The following histogram shows the frequency distribution of standardized residuals. A standardized residual represents the original residual value divided by the standard deviation of all residuals, producing a standardized value that represents a given residual's distance from the line of best fit. Based on the shape of this distribution, we can estimate that residuals are distributed normally in this model. **need to check interpretation here
+The following histogram shows the frequency distribution of standardized residuals. A standardized residual represents the original residual value divided by the standard deviation of all residuals, producing a standardized value that represents a given residual's distance from the line of best fit. Based on the shape of this distribution, we can estimate that residuals have a slight skew to the left, indicating that the median is greater than the mean.
 
 ```{r resid hist}
 ggplot(dat.log, aes(standard_residuals)) +
@@ -460,7 +478,7 @@ Based on the previous maps of LNMEDHVAL and predictor variables across Philadelp
 
 ## Chloropleth map of residuals
 
-The following map displays standardized residuals across Philadelphia. Negative residual values appear to cluster in certain areas in North Philadelphia, indicating the possible presence of significant spatial autocorrelation.
+The following map displays standardized residuals across Philadelphia. Negative residual values appear to cluster in certain areas in North Philadelphia, indicating the possible presence of substantial spatial autocorrelation.
 
 ```{r residuals map, message=FALSE, warning=FALSE, cache=TRUE}
 #histogram and a choropleth map of standardized regression
@@ -472,7 +490,7 @@ dat.sf<-merge(dat.log,dat.sf,by="POLY_ID")%>%
 
 ggplot(dat.sf) +
   geom_sf(aes(fill = standard_residuals), color = "transparent") +
-  scale_fill_viridis_b(option = "A", direction = 1) +
+  scale_fill_viridis_c(option = "A", direction = 1) +
   labs(title = "Chloropleth map of Standardized Residuals") +
   theme_void()
 ```
@@ -530,7 +548,24 @@ rmse2
 
 # Discussion and Limitations 
 
-In this project, we built a model based on ordinary least squares regression to predict median home value using a set of demographic variables at the block group level. These variables were: percent of residents with at least a bachelor's degree, vacancy percent of homes, percent of homes that were detached single family houses, households in poverty, and median household income. To build the model, we conducted exploratory data analysis and checked regression assumptions. To test its validity, we conducted stepwise regression and k-folds cross-validation using a restricted model.
+In this analysis, we built a model based on ordinary least squares regression to predict median home value using a set of demographic variables at the block group level. These variables were: percent of residents with at least a bachelor's degree, vacancy percent of homes, percent of homes that were detached single family houses, households in poverty, and median household income. To build the model, we conducted exploratory data analysis and checked regression assumptions. To test its validity, we conducted stepwise regression and k-folds cross-validation using a restricted model.
+
+The model has an adjusted r-squared of 0.66, indicating that our predictors explain 66% of the variation in our dependent variables, log-transformed home values. 
+
+Takeaways:
+- education strongly predictive of home value - this is interesting in a city defined by "meds and eds" and full of colleges
+- vacancy: post-industrial city, high rates of vacancy generally
+- single homes not predictive: maybe because of gentrification, surrounding homes don't necessarily matter?
+Limitations:
+- high spatial autocorrelation in errors
+- limited sample size inherent in census (low participation rate)
+- skewed sample (low-income, low-ses, minority communities less likely to answer census)
+- under-predicts in north philly
+
+Recommendations:
+- good for looking at individual predictors
+- interesting for policy/academic research
+- would not use for industry/real estate
 
 > Talk about the quality of the model – that is, state if this is a good model
 overall (e.g., R2, F-ratio test), and what other predictors that we didn’t
