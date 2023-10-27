@@ -94,7 +94,7 @@ In a survey of methods and input types for house price prediction, Geerts and co
 * Number of households with incomes below poverty level (NBELPOV100)
 * Median household income  (MEDHHINC)
 
-These indicators present a crude socioeconomic context for a neighborhood, and are well-documented as predictors of home prices. Indeed, it is reasonable that residents with higher educational attainment and income are able to afford more expensive homes. Conversely, it is also possible that the arrival of residents with higher socioeconomic status may lead to an eventual increase in property values. Using regression analysis, we find that __________________________. In light of this, we recommend that _________. Future research is needed _______________________.
+These indicators present a crude socioeconomic context for a neighborhood, and are well-documented as predictors of home prices. Indeed, it is reasonable that residents with higher educational attainment and income are able to afford more expensive homes. Conversely, it is also possible that the arrival of residents with higher socioeconomic status may lead to an eventual increase in property values. Using regression analysis, we find that 66% of variation in log-transformed median home value in Philadelphia can be explained by vacancy rate, households in poverty, single homes, and bachelors degrees. Of these variables, percent of residents with bachelors degrees is the strongest predictor of median home value. However, there is a high rate of clustering in error, and the model is less accurate in certain neighborhoods. In light of this, we recommend that future research is needed to generate a model that can be used reliably across the city.
 
 # Methods  
 ## Data cleaning
@@ -129,7 +129,7 @@ This method relies on several assumptions:
 * the residuals are normally distributed, random, and homoscedastic
 * observations and residuals are independent
 * y is continuous and normally distributed
-* predictors are not collinear (highly-correlated) 
+* predictors are not co-linear (highly-correlated)
 
 Assuming all these conditions are met, we need to calculate the following parameters:
 - $\beta _{0}$
@@ -384,12 +384,12 @@ The logarithm transformed regression model has a multiple $R^2$ of 0.6623 and ad
 ### Vacancy rate and households in poverty
 PCTVACANT and LNNBELPOV100 are negatively associated with median home value, indicating that increases in vacancy and poverty rate are associated with decreases in home prices.
 
-The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of log-transformed median home value. Similarly, a 1-unit increase in the household in poverty is associated with a decrease of 0.0789054 in the median home value. In practical terms, a 1% increase in PCTSINGLES and PCTBACHMOR respectively lead to a $______ and $_____ increase in median home value. 
+The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of log-transformed median home value. Similarly, a 1-unit increase in the log-transformed share of households in poverty (LNNBELPOV100) is associated with a decrease of 0.0789054 in the median home value. In practical terms, a 1% increase in PCTVACANT and LNNBELPOV100 respectively lead to a $191.57 and $789.05 decrease in median home value.
 
 ### Single homes and bachelors degrees
 PCTSINGLES and PCTBACHMOR are positively associated with median home value, meaning that increases in educational attainment and single homes are associated with increases in home prices. 
 
-PCTSINGLES and PCTBACHMOR have the estimates of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home unit and percentage of individuals with bachelor degree is individually associated with an increase of 0.0029769 and 0.209098 in log-transformed median home value. In other words, a 1% increase in PCTSINGLES and PCTBACHMOR respectively lead to a $______ and $_____ increase in median home value. 
+PCTSINGLES and PCTBACHMOR have the estimates of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home units and the percentage of individuals with a bachelor's degree is individually associated with an increase of 0.0029769 and 0.209098 in log-transformed median home value. In other words, a 1% increase in PCTSINGLES and PCTBACHMOR respectively leads to a $29.77 and $209.10 increase in median home value.
 
 ### Accuracy
 The standard error measures the variability and precision of the estimate, with lower values indicating higher precision. The t value measures the strength of the relationship between the predictor and the dependent variable. Higher absolute t values indicate a stronger relationship. In this regression, PCTBACHMOR has the highest absolute t value of 38.494 indicating its strongest relationship with median home value, and PCTSINGLES has the lowest absolute t value of 4.234, meaning it has the weakest relationship with median home value.
@@ -424,7 +424,7 @@ dat.log$standard_residuals <- rstandard(reg)
 
 # Regression Assumption Checks 
 
-In this section, we will conduct tests on model assumptions. We have observed the distributions of variables earlier, and will continue to investigate these in the following figures.
+In this section, we conduct tests on model assumptions. We have observed the distributions of variables earlier, and will continue to investigate these in the following figures.
 
 ## Scatterplots of dependent variable and predictors
 
@@ -485,7 +485,6 @@ Based on the previous maps of LNMEDHVAL and predictor variables across Philadelp
 
 
 ## Chloropleth map of residuals
-
 The following map displays standardized residuals across Philadelphia. Negative residual values appear to cluster in certain areas in North Philadelphia, indicating the possible presence of substantial spatial autocorrelation.
 
 ```{r residuals map, message=FALSE, warning=FALSE, cache=TRUE}
@@ -560,15 +559,14 @@ In this analysis, we built a model based on ordinary least squares regression to
 
 The model has an adjusted r-squared of 0.66, indicating that our predictors explain 66% of the variation in our dependent variables, log-transformed home values. 
 
-Takeaways:
-- education strongly predictive of home value - this is interesting in a city defined by "meds and eds" and full of colleges
-- vacancy: post-industrial city, high rates of vacancy generally
-- single homes not predictive: maybe because of gentrification, surrounding homes don't necessarily matter?
+Several noteworthy takeaways emerge from the analysis. Firstly, education emerges as a robust predictor of home value, a finding of particular interest in a city characterized by a dominant "meds and eds" industry. Secondly, while high vacancy rates are common in this post-industrial city, the data suggests that vacancy may not exert a strong influence on home values, possibly due to its widespread prevalence. Similarly, the presence of single homes does not appear to significantly impact home values, a trend that may be linked to gentrification dynamics where the immediate neighborhood composition may matter less. Finally, the strong predictive power of household income and poverty rate in a highly racially and socioeconomically segregated city aligns with expectations, as these variables are closely tied to the overall living environment and quality, shedding light on the intricate interplay between socio-demographic factors and housing values in this urban setting.
+
 Limitations:
-- high spatial autocorrelation in errors
-- limited sample size inherent in census (low participation rate)
-- skewed sample (low-income, low-ses, minority communities less likely to answer census)
-- under-predicts in north philly
+- high spatial autocorrelation in errors, meaning the generalizability of this model is low and it doesn't predict well across different types of neighborhood contexts
+- limited sample size inherent in census data - requires people to response
+- skewed sample (low-income, low-ses, minority, non english speaking communities are less likely to answer census, leading to lower representation in neighborhoods)
+- heterscedasticity in standard error - 
+- unclear what the remaining 33% of 
 
 Recommendations:
 - good for looking at individual predictors
