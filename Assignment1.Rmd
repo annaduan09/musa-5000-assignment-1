@@ -144,7 +144,7 @@ Assuming all these conditions are met, we need to calculate the following parame
 ### K-fold cross validation
 
 ## Software
-All analysis in this study was completed using R packages in RStudio. 
+All analysis in this study was completed using R language packages in RStudio. 
 
 ```{r read data, message=FALSE, warning=FALSE, cache=TRUE, include=FALSE}
 dat <- read.csv("RegressionData.csv")
@@ -152,7 +152,7 @@ dat <- read.csv("RegressionData.csv")
 pander::pander(head(dat %>% dplyr::select(AREAKEY, MEDHVAL, PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES,
                                     NBELPOV100)), caption = "Variables of interest")
   
-dat.sf <- st_read("regression data shapefile/RegressionData.shp")
+dat.sf <- st_read("regression data shapefile/RegressionData.shp", quiet = TRUE)
 ```
 
 # Results
@@ -205,7 +205,7 @@ pander(dat.stat, caption = "Summary Statistics")
 
 ## Variable distributions
 
-Looking at the variables plotted as histograms, we observe positive skews for median home value, individuals with bachelors degrees, vacant houses, single family houses, and households in poverty. Median household income is not visibly skewed.
+Looking at the variables plotted as histograms, we observe positive skews for median home value, individuals with bachelors degrees, vacant houses, single family houses, and households in poverty. Median home value, our dependent variable, is visibly skewed to the left, which makes sense as its mean is greater than its median. Individuals with bachelors degrees, vacant houses, single house units, and households living in poverty (independent variables) are also skewed to the left, and all of these except for households in poverty have a substantial spike of observations at 0. Of the independent variables, only median household income appears almost normally distributed. 
 
 ```{r histograms, fig.height=9, fig.width=13, message=FALSE, warning=FALSE, cache=TRUE}
 
@@ -243,6 +243,7 @@ top = "Histogram of analysis variables")
 ```
 
 ## Log-transformed variable distributions
+To make the skewed variables more easily interpretable, and also to meet the assumption of normal distribution in multiple regression analysis, we log-transform all variables except for median household income (which is normally distributed). 
 
 After log-transformation, the dependent variable (Median Home Value) has a roughly normal distribution, so we will use LNMEDHVAL in our analysis. Of the independent variables, log-transformation only normalizes NBELPOV100 (Households living in poverty), so we will only use the log-transformed values for this variable and un-transformed values for the others.The regression we did in our assignment is all based on this log-transformed variable. The more explicit explanation of the regression assumptions will be examined in a separate section below in regression assumption checks.
 
@@ -292,7 +293,7 @@ top = "Histogram of log-transformed independent variables")
 ## Correlation matrix 
 The correlation matrix generally supports the conclusions based on the visual comparison of the predictor maps, but provides a more quantitative visualization of the relationships between the predictors. 
 
-There is presence of severe multicollinearity in this correlation matrix. In this correlation matrix, high correlations between certain pairs of variables are observed. For example, the correlation coefficients between MEDHHINC and PCTBACHMOR is 0.7, as well as the correlation coefficients between PCTBACHMOR and LNMEDHVAL. This result could indicate the possibility of multicollinearity. Additionally, the high correlation coefficient between MEDHHINC and LNNBELPOV100 is 0.6 and the correlation coefficient between PCTVACANT and LNMEDHVAL is 0.5. These results of coefficients also hint at potential multicollinearity. While the correlation matrix suggests a degree of multicollinearity.
+There is presence of severe multicollinearity in this correlation matrix. In this correlation matrix, high correlations between certain pairs of variables are observed. For example, the correlation coefficients between MEDHHINC and PCTBACHMOR is 0.7, as well as the correlation coefficients between PCTBACHMOR and LNMEDHVAL. This result could indicate the possibility of multicollinearity. Additionally, the high correlation coefficient between MEDHHINC and LNNBELPOV100 is 0.6 and the correlation coefficient between PCTVACANT and LNMEDHVAL is 0.5. These results of coefficients also hint at potential multicollinearity, suggesting that we should not include all of our independent variables in our final regression analysis. 
  
 ```{r corr matrix, fig.height=8, fig.width=8, message=FALSE, warning=FALSE, cache=TRUE}
 

@@ -1,7 +1,7 @@
 ---
 title: "MUSA5000 Assignment 1"
 author: "Anna Duan, Jingyi Li, and Jamie Song"
-date: "2023-10-25"
+date: "2023-10-26"
 output:
   html_document:
     keep_md: yes
@@ -19,11 +19,11 @@ The ability to accurately predict house values is of great interest to real esta
 
 In a survey of methods and input types for house price prediction, Geerts and colleagues (2023) present a set of variable types for prediction models, including structural features, temporal data, environmental features, and socioeconomic features. For this analysis, we focus on variables from the latter category, specifically the following:
 
-* Residents with at least a bachelor’s degree (%)
-* Housing units that are vacant (%)
-* Housing units that are detached single family houses (%)
-* Number of households with incomes below 100% poverty level
-* Median household income (%).  
+* Percent of residents over 25 with at least a bachelor’s degree (PCTBACHMOR)
+* Percent of housing units that are vacant (PCTVACANT)
+* Percent of housing units that are detached single family houses (PCTSINGLES)
+* Number of households with incomes below poverty level (NBELPOV100)
+* Median household income  (MEDHHINC)
 
 These indicators present a crude socioeconomic context for a neighborhood, and are well-documented as predictors of home prices. Indeed, it is reasonable that residents with higher educational attainment and income are able to afford more expensive homes. Conversely, it is also possible that the arrival of residents with higher socioeconomic status may lead to an eventual increase in property values. Using regression analysis, we find that __________________________. In light of this, we recommend that _________. Future research is needed _______________________.
 
@@ -75,7 +75,7 @@ Assuming all these conditions are met, we need to calculate the following parame
 ### K-fold cross validation
 
 ## Software
-All analysis in this study was completed using R packages in RStudio. 
+All analysis in this study was completed using R language packages in RStudio. 
 
 
 
@@ -95,40 +95,6 @@ In addition to the four quantiles, the summary statistics table also provides th
 In the summary statistics table, the mean of the dependent variable MEDHVAL is 66288, and its standard deviation is 60006, which is considerably large, indicating that the data of the dependent variable is spread out. The mean of PCTBACHMOR is 16.08, and its standard deviation is 17.77, indicating that this data is also very spread out. The mean and standard deviation for MEDHHINC are 31542 and 16298, respectively. The data is not as spread out as the previous two data but still spread. The mean and standard deviation of PCTVACANT are 11.29 and 9.628, respectively, making PCTVACANT a relatively spread-out dataset as well. PCTSINGLES has a mean of 9.226 and a standard deviation of 13.25, making this predictor the most spread-out data. NBELPOV100 has a mean of 189.8 and a standard deviation of 164.3, indicating a considerable spread of data.
 
 
-```r
-sum_stat <- function(var) {
-  dat <- 
-  dat %>%
-    dplyr::select(var) %>%
-    mutate(variable = var) %>%
-    summarize(quartile_1 = quantile(dat[var], probs = 0.25, na.rm = TRUE),
-           median = quantile(dat[var], probs = 0.5, na.rm = TRUE),
-           mean = mean(dat[[var]], na.rm = TRUE),
-           quartile_3 = quantile(dat[var], probs = 0.75, na.rm = TRUE),
-           max = max(dat[var], na.rm = TRUE),
-           sd = sd(dat[[var]], na.rm = TRUE),
-           variance = var(dat[[var]], na.rm = TRUE))
-  return(dat)
-  }
-
-medhval_summ <- sum_stat("MEDHVAL")
-pctbachmorr_summ <- sum_stat("PCTBACHMOR")
-medhhinc_summ <- sum_stat("MEDHHINC")
-pctvacant_summ <- sum_stat("PCTVACANT")
-pctsingles_summ <- sum_stat("PCTSINGLES")
-nbelpov100_summ <- sum_stat("NBELPOV100")
-
-dat.stat <- rbind(medhval_summ,
-                  pctbachmorr_summ,
-                  medhhinc_summ,
-                  pctvacant_summ,
-                  pctsingles_summ,
-                  nbelpov100_summ) 
-
-pander(dat.stat, caption = "Summary Statistics")
-```
-
-
 ----------------------------------------------------------------------
  quartile_1   median   mean    quartile_3    max     sd     variance  
 ------------ -------- ------- ------------ ------- ------- -----------
@@ -136,7 +102,7 @@ pander(dat.stat, caption = "Summary Statistics")
 
    4.847        10     16.08     20.07      92.99   17.77     315.8   
 
-   21061      29719    31542     38750      2e+05   16298   265638946 
+   21060      29719    31542     38750      2e+05   16298   265638946 
 
    4.372      9.091    11.29     16.28      77.12   9.628     92.71   
 
@@ -151,89 +117,11 @@ Table: Summary Statistics
 
 Looking at the variables plotted as histograms, we observe positive skews for median home value, individuals with bachelors degrees, vacant houses, single family houses, and households in poverty. Median household income is not visibly skewed.
 
-
-```r
-grid.arrange(
-ggplot(dat %>% filter(MEDHVAL <= 152525), aes(x = MEDHVAL)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "orchid", bins = 50) +
-  labs(title = "Median Home Value ($)", y = "", x = "Dollars") +
-  plotTheme(),
-
-ggplot(dat %>% filter(PCTBACHMOR <= 59.13698), aes(x = PCTBACHMOR)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "navy", bins = 50) +
-  labs(title = "Individuals with Bachelor’s Degrees or Higher (%)", y = "", x = "Percent") +
-  plotTheme(),
-
-ggplot(dat %>% filter(MEDHHINC <= 56444.9), aes(x = MEDHHINC)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "navy", bins = 50) +
-  labs(title = "Median Household Income", y = "Block groups (n = 1720)", x = "Dollars") +
-  plotTheme(),
-
-ggplot(dat %>% filter(PCTVACANT <= 28.5154), aes(x = PCTVACANT)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "navy", bins = 50) +
-  labs(title = "Vacant Houses (%)", y = "", x = "Percent") +
-  plotTheme(),
-
-ggplot(dat %>% filter(PCTSINGLES <= 30.68176), aes(x = PCTSINGLES)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "navy", bins = 50) +
-  labs(title = "Single House Units (%)", y = "", x = "Percent") +
-  plotTheme(),
-
-ggplot(dat %>% filter(NBELPOV100 <= 514.05), aes(x = NBELPOV100)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "navy", bins = 50) +
-  labs(title = "Households Living in Poverty", y = "", x = "Households") +
-  plotTheme(),
-top = "Histogram of analysis variables")
-```
-
 ![](Assignment1_files/figure-html/histograms-1.png)<!-- -->
 
 ## Log-transformed variable distributions
 
 After log-transformation, the dependent variable (Median Home Value) has a roughly normal distribution, so we will use LNMEDHVAL in our analysis. Of the independent variables, log-transformation only normalizes NBELPOV100 (Households living in poverty), so we will only use the log-transformed values for this variable and un-transformed values for the others.The regression we did in our assignment is all based on this log-transformed variable. The more explicit explanation of the regression assumptions will be examined in a separate section below in regression assumption checks.
-
-
-```r
-dat.log <- dat %>%
-  mutate(LNMEDHVAL = log(MEDHVAL),
-         LNPCTBACHMOR = log(1 + PCTBACHMOR), #adding one for variables with 0 values
-         LNMEDHHINC = log(MEDHHINC),
-         LNPCTVACANT = log(1 + PCTVACANT),
-         LNPCTSINGLES = log(1 + PCTSINGLES),
-         LNNBELPOV100 = log(1 + NBELPOV100))
-
-grid.arrange(
-ggplot(dat.log, aes(x = LNMEDHVAL)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "orchid", bins = 50) +
-  labs(title = "Median Home Value ($)", y = "", x = "Dollars") +
-  plotTheme(),
-
-ggplot(dat.log, aes(x = LNPCTBACHMOR)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "navy", bins = 50) +
-  labs(title = "Individuals with Bachelor’s Degrees or Higher (%)", y = "", x = "Percent") +
-  plotTheme(),
-
-ggplot(dat.log, aes(x = LNMEDHHINC)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "navy", bins = 50) +
-  labs(title = "Median Household Income", y = "Block groups (n = 1720)", x = "Dollars") +
-  plotTheme(),
-
-ggplot(dat.log, aes(x = LNPCTVACANT)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "navy", bins = 50) +
-  labs(title = "Vacant Houses (%)", y = "", x = "Percent") +
-  plotTheme(),
-
-ggplot(dat.log, aes(x = LNPCTSINGLES)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "navy", bins = 50) +
-  labs(title = "Single House Units (%)", y = "", x = "Percent") +
-  plotTheme(),
-
-ggplot(dat.log, aes(x = LNNBELPOV100)) + # filtering for outliers, keeping 95%
-  geom_histogram(fill = "navy", bins = 50) +
-  labs(title = "Households Living in Poverty", y = "", x = "Households") +
-  plotTheme(),
-top = "Histogram of log-transformed independent variables")
-```
 
 ![](Assignment1_files/figure-html/log transform-1.png)<!-- -->
 
@@ -243,21 +131,6 @@ The correlation matrix generally supports the conclusions based on the visual co
 
 There is presence of severe multicollinearity in this correlation matrix. In this correlation matrix, high correlations between certain pairs of variables are observed. For example, the correlation coefficients between MEDHHINC and PCTBACHMOR is 0.7, as well as the correlation coefficients between PCTBACHMOR and LNMEDHVAL. This result could indicate the possibility of multicollinearity. Additionally, the high correlation coefficient between MEDHHINC and LNNBELPOV100 is 0.6 and the correlation coefficient between PCTVACANT and LNMEDHVAL is 0.5. These results of coefficients also hint at potential multicollinearity. While the correlation matrix suggests a degree of multicollinearity.
  
-
-```r
-dat.corplot <- dat.log %>%
-  dplyr::select(-POLY_ID, -AREAKEY, -MEDHVAL, -LNPCTBACHMOR, -LNMEDHHINC, -LNPCTVACANT, -LNPCTSINGLES, -NBELPOV100)
-
-ggcorrplot(round(cor(dat.corplot %>% na.omit()), 1),
-  p.mat = cor_pmat(dat.corplot %>% na.omit()),
-  colors = c("navy", "white", "orchid1"),
-  type="lower",
-  insig = "blank",
-  show.legend = FALSE,
-  lab = TRUE) +  
-    labs(title = "Log-transformed median home value correlation with independent variables") 
-```
-
 ![](Assignment1_files/figure-html/corr matrix-1.png)<!-- -->
 
 ## Chloropleth maps
@@ -272,45 +145,6 @@ The percentage of vacant homes also shows a strong correlation with median home 
 
 Given the high inter-correlation observed between the dependent variable, median home value, and predictors such as households in poverty, the percentage of individuals with a bachelor's degree or higher, and the percentage of vacant homes, concerns may arise regarding multicollinearity. These variables might display high correlations, posing challenges in differentiating the individual effects of each predictor on the dependent variable.
 
-
-```r
-grid.arrange(
-ggplot(dat.sf) +
-  geom_sf(aes(fill = LNMEDHVAL), color = "transparent") +
-  scale_fill_viridis_c(option = "A", direction = 1) +
-  labs(title = "Log-transformed median home value") +
-  theme_void() +
-  theme(legend.position = c(0.8, 0.2)),
-
-ggplot(dat.sf) +
-  geom_sf(aes(fill = PCTVACANT), color = "transparent") +
-  scale_fill_viridis_c(option = "A", direction = 1) +
-  labs(title = "Vacant homes (%)") +
-  theme_void() +
-  theme(legend.position = c(0.8, 0.2)),
-
-ggplot(dat.sf) +
-  geom_sf(aes(fill = PCTSINGLES), color = "transparent") +
-  scale_fill_viridis_c(option = "A", direction = 1) +
-  labs(title = "Single home units (%)") +
-  theme_void() +
-  theme(legend.position = c(0.8, 0.2)),
-
-ggplot(dat.sf) +
-  geom_sf(aes(fill = PCTBACHMOR), color = "transparent") +
-  scale_fill_viridis_c(option = "A", direction = 1) +
-  labs(title = "Individuals with bachelors or more (%)") +
-  theme_void() +
-  theme(legend.position = c(0.8, 0.2)),
-
-ggplot(dat.sf) +
-  geom_sf(aes(fill = LNNBELPOV), color = "transparent") +
-  scale_fill_viridis_b(option = "A", direction = 1) +
-  labs(title = "Log-transformed households in poverty") +
-  theme_void() +
-  theme(legend.position = c(0.8, 0.2)), ncol = 3)
-```
-
 ![](Assignment1_files/figure-html/maps-1.png)<!-- -->
 
 # Multiple Regression Analysis
@@ -324,25 +158,6 @@ Because the regression p-value is less than 0.0001, it suggests that PCTVACANT, 
 
 The logarithm transformed regression model has a multiple $R^2$ of 0.6623 and adjusted $R^2$ of 0.6615 which means that approximately 66.23% of the log-transformed values of median home value can be explained by the predictors in the model. This $R^2$ indicates a moderately strong relationship between median home value and the model predictors.
 
-
-```r
-# Assuming there’s no severe multicollinearity, use the lm command to run
-# the regression where LNMEDHVAL is the dependent variable and
-# PCTVACANT, PCTSINGLES, PCTBACHMOR, and LNNBELPOV100 are
-# predictors.
-# 
-# In your report, be sure to present the summary of the fit as well as the
-# ANOVA table containing the regression and error sum of squares (use the
-# summary and anova commands). The only thing you should be looking at in
-# the output from the anova command is the error sum of squares, and not
-# any of the p-values.
-# 
-# c. Use the fitted, residuals and rstandard commands to save the predicted
-# values, residuals and standardized residuals, respectively.
-
-reg <- lm(LNMEDHVAL ~ PCTVACANT + PCTSINGLES + PCTBACHMOR + LNNBELPOV100, data=dat.log)
-summary(reg)
-```
 
 ```
 ## 
@@ -369,10 +184,6 @@ summary(reg)
 ## F-statistic: 840.9 on 4 and 1715 DF,  p-value: < 2.2e-16
 ```
 
-```r
-anova(reg)
-```
-
 ```
 ## Analysis of Variance Table
 ## 
@@ -387,13 +198,6 @@ anova(reg)
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-```r
-#vif(reg)
-dat.log$pred_values <- fitted(reg)
-dat.log$residual_values <- residuals(reg)
-dat.log$standard_residuals <- rstandard(reg)
-```
-
 # Regression Assumption Checks 
 
 In this section, we will conduct tests on model assumptions. We have observed the distributions of variables earlier, and will continue to investigate these in the following figures.
@@ -402,62 +206,17 @@ In this section, we will conduct tests on model assumptions. We have observed th
 
 The following scatterplots relate the dependent variable, LNMEDHVAL, to each predictor variable. Although a few are somewhat close, none of the relationships appear to fulfill the assumption of linearity in OLS regression.
 
-
-```r
-cor.long <- dat.log %>%
-  dplyr::select(LNMEDHVAL, PCTBACHMOR, MEDHHINC, PCTVACANT, PCTSINGLES, LNNBELPOV100) %>%
-  gather(Variable, Value, -LNMEDHVAL) %>%
-  mutate(Value = as.numeric(Value))
-
-cor.cor <-
-  cor.long %>%
-    group_by(Variable) %>%
-    summarize(correlation = cor(Value, LNMEDHVAL, use = "complete.obs"))
-
-ggplot(cor.long, aes(Value, LNMEDHVAL)) +
-  geom_point(size = 0.1, color = "navy", alpha = 0.4) +
-  geom_text(data = cor.cor, aes(label = paste("r =", round(correlation, 2))),
-            x=-Inf, y=Inf, vjust = 1.5, hjust = -.1, size = 4) +
-  geom_smooth(method = "lm", se = FALSE, color = "orchid", linewidth = 0.5) +
-  facet_wrap(~Variable, ncol = 3, scales = "free") +
-  plotTheme() + 
-  labs(title = "Logged Median Home Value as a Function of Predictor Variables", subtitle = "Philadelphia, PA Block Groups; n = 1720") 
-```
-
 ![](Assignment1_files/figure-html/scatter-1.png)<!-- -->
 
 ## Histogram of standardized residuals
 
 The following histogram shows the frequency distribution of standardized residuals. A standardized residual represents the original residual value divided by the standard deviation of all residuals, producing a standardized value that represents a given residual's distance from the line of best fit. Based on the shape of this distribution, we can estimate that residuals are distributed normally in this model. **need to check interpretation here
 
-
-```r
-ggplot(dat.log, aes(standard_residuals)) +
-  geom_histogram(binwidth = 0.5, fill = "navy") +
-  plotTheme() + 
-  labs(title = "Histogram of Standardized Residuals")
-```
-
 ![](Assignment1_files/figure-html/resid hist-1.png)<!-- -->
 
 ## Scatterplot of standardized residuals
 
 The following scatterplot shows standardized residuals as a function of predicted LNMEDHVAL values. The distribution of residuals appears to demonstrate heteroscedasticity, as the variation in residuals is not uniform across predicted values. There are also a number of outlier values, which tend to be more positive towards lower predicted values and more negative towards higher predicted values.
-
-
-```r
-# Create a scatter plot with Standardized Residuals on the y-axis and
-# Predicted Values on the x-axis. You will be asked to present this scatter plot
-# in your report, so take a screenshot of it if you plan to use MS Word.
-
-ggplot(dat.log, aes(pred_values, standard_residuals)) +
-  geom_point(size = 0.5, color = "navy", alpha = 0.4) +
-  #geom_text(data = cor.cor, aes(label = paste("r =", round(correlation, 2))),
-  #          x=-Inf, y=Inf, vjust = 1.5, hjust = -.1, size = 4) +
-  geom_smooth(method = "lm", se = FALSE, color = "orchid", linewidth = 0.5) +
-  plotTheme() + 
-  labs(title = "Standardized residuals") 
-```
 
 ![](Assignment1_files/figure-html/scatter_standard_resid-1.png)<!-- -->
 
@@ -468,22 +227,6 @@ Based on the previous maps of LNMEDHVAL and predictor variables across Philadelp
 
 The following map displays standardized residuals across Philadelphia. Negative residual values appear to cluster in certain areas in North Philadelphia, indicating the possible presence of significant spatial autocorrelation.
 
-
-```r
-#histogram and a choropleth map of standardized regression
-#residuals that you saved using the rstandard command earlier
-
-
-dat.sf<-merge(dat.log,dat.sf,by="POLY_ID")%>%
-  st_as_sf()
-
-ggplot(dat.sf) +
-  geom_sf(aes(fill = standard_residuals), color = "transparent") +
-  scale_fill_viridis_b(option = "A", direction = 1) +
-  labs(title = "Chloropleth map of Standardized Residuals") +
-  theme_void()
-```
-
 ![](Assignment1_files/figure-html/residuals map-1.png)<!-- -->
 
 # Additional Models
@@ -492,14 +235,6 @@ ggplot(dat.sf) +
 
 We conduct stepwise regression to provide an alternative to the original model as well as test its validity. The stepwise model path did not remove any predictors, so all four original predictors are preserved in the final stepwise regression.
 
-
-```r
-#Use the step and step$anova commands in the MASS library to run stepwise
-# regression and determine the best model based on the Akaike Information
-# Criterion.
-
-step <- stepAIC(reg, direction="both")
-```
 
 ```
 ## Start:  AIC=-3448.07
@@ -511,10 +246,6 @@ step <- stepAIC(reg, direction="both")
 ## - LNNBELPOV100  1    11.692 242.04 -3364.9
 ## - PCTVACANT     1    51.546 281.89 -3102.7
 ## - PCTBACHMOR    1   199.020 429.36 -2379.0
-```
-
-```r
-step$anova
 ```
 
 ```
@@ -569,18 +300,10 @@ rmse2 <- sqrt(mse2)
 
 RMSE for original model:
 
-```r
-rmse
-```
-
 ```
 ## [1] 0.3664401
 ```
 RMSE for restricted model:
-
-```r
-rmse2
-```
 
 ```
 ## [1] 0.4427216
@@ -590,4 +313,24 @@ rmse2
 
 # Discussion and Limitations 
 
-In this project, we... 
+In this project, we built a model based on ordinary least squares regression to predict median home value using a set of demographic variables at the block group level. These variables were: percent of residents with at least a bachelor's degree, vacancy percent of homes, percent of homes that were detached single family houses, households in poverty, and median household income. To build the model, we conducted exploratory data analysis and checked regression assumptions. To test its validity, we conducted stepwise regression and k-folds cross-validation using a restricted model.
+
+> Talk about the quality of the model – that is, state if this is a good model
+overall (e.g., R2, F-ratio test), and what other predictors that we didn’t
+include in our model might be associated with our dependent variable.
+i. Looking at the stepwise regression results, did the final model
+include all 4 predictors or were some dropped? What does that tell
+you about the quality of the model?
+ii. Looking at the cross-validation results, was the RMSE better for the
+4 predictor model or the 2 predictor model?
+c) If you haven’t done that in the Results section, talk explicitly about the
+limitations of the model – that is, mention which assumptions were
+violated, and if applicable, how that may affect the model/parameter
+estimation/estimated significance.
+i. In addition, talk about the limitations of using the NBELPOV100
+variable as a predictor – that is, what are some limitations of using
+the raw number of households living in poverty rather than a
+percentage?
+d) Would it make sense to run Ridge or LASSO regression here? Explain briefly
+(~4-5 sentences) what these methods are, when they’re used, and why
+they would or would not be appropriate here.
