@@ -123,12 +123,13 @@ In the following formula, median household value is a function of ______________
 
 [[insert formula here]]
 
-This method makes a few assumptions:
-- x and y have a linear relationship
-- the residuals are normally distributed, random, and homoscedastic
-- observations and residuals are independent
-- y is continuous and normally distributed
-- predictors are not collinear (highly-correlated) 
+This method relies on several assumptions:
+
+* x and y have a linear relationship
+* the residuals are normally distributed, random, and homoscedastic
+* observations and residuals are independent
+* y is continuous and normally distributed
+* predictors are not collinear (highly-correlated) 
 
 Assuming all these conditions are met, we need to calculate the following parameters:
 - $\beta _{0}$
@@ -141,7 +142,14 @@ Assuming all these conditions are met, we need to calculate the following parame
 
 ## Additional Analyses
 ### Stepwise regression
+A regression method from data mining, stepwise regression selects predictors based on which ones generate the smallest value of the Akaike Information Criterion (AIC), a measure of the relative quality of statistical models. Although stepwise regression provides a streamlined method of optimizing a regression model, there is no guarantee that the model will be optimized in any specific sense. It also yields a single final model when there may be multiple equally good ones. Stepwise regression also does not take into account any underlying theory regarding predictor variables, so important variables may be excluded in the optimization process. In this study, we employ stepwise regression as a validation method for our model.
+
 ### K-fold cross validation
+In $k$-fold cross validation of a regression model, the set of observations is randomly divided into $k$ folds of approximately equal size. The 1st fold is taken out as a validation test set and the model is fitted on the remaining $k-1$ folds, which comprise the training set. The mean squared error (MSE) is calculated for the 1st fold. This process is repeated $k$ times with a different fold as the test set each time, generating $k$ estimates of MSE. 
+
+The $k$-fold root mean squared error (RMSE) is an estimate of the magnitude of a typical residual, and it is used to compare different models -- the best model is the one with the lowest $k$-fold RMSE. It is calculated by taking the mean of MSEs across folds ($k$-fold MSE), then taking the square root of that value.
+
+In this study, we set $k=5$.
 
 ## Software
 All analysis in this study was completed using R language packages in RStudio. 
