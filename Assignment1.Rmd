@@ -573,22 +573,13 @@ Recommendations:
 - interesting for policy/academic research
 - would not use for industry/real estate
 
-> Talk about the quality of the model – that is, state if this is a good model
-overall (e.g., R2, F-ratio test), and what other predictors that we didn’t
-include in our model might be associated with our dependent variable.
-i. Looking at the stepwise regression results, did the final model
-include all 4 predictors or were some dropped? What does that tell
-you about the quality of the model?
-ii. Looking at the cross-validation results, was the RMSE better for the
-4 predictor model or the 2 predictor model?
-c) If you haven’t done that in the Results section, talk explicitly about the
-limitations of the model – that is, mention which assumptions were
-violated, and if applicable, how that may affect the model/parameter
-estimation/estimated significance.
-i. In addition, talk about the limitations of using the NBELPOV100
-variable as a predictor – that is, what are some limitations of using
-the raw number of households living in poverty rather than a
-percentage?
-d) Would it make sense to run Ridge or LASSO regression here? Explain briefly
-(~4-5 sentences) what these methods are, when they’re used, and why
-they would or would not be appropriate here.
+Model Evaluation:
+Based on the results of our regression, the 4 predictors are all considered as significant in predicting the median home value. Therefore, the model is relatively robust and each predictor can explain some of the variance of the dependent variable.
+The k-fold cross-validation result tells that model with 4 predictors has a lower root mean square error (RMSE) than model with only 2 predictors, which suggests that more predictors help to improve the predicting ability of variance of the dependent variable of median home value.
+The other predictor that can be associate with our model can be safety. Safer neighborhoods are generally considered to have a higher median home value than areas with more crimes.
+
+Assumptions Violations:
+The scatterplots of the dependent variable and predictors indicate violations of the linearity and homoscedasticity assumptions. Additionally, the histogram of standardized residuals suggests a slight left skew, which may affect the accuracy of the model's predictions. Moreover, the multicollinearity in the correlation matrix implies inaccuracy of the model. Also, utilizing the raw number of households living in poverty (NBELPOV100) as a predictor might skew the impact of poverty on median home values for it does not account for the variance of population size across regions. 
+
+Ridge or LASSO regression?
+The Ridge or LASSO regression are appropriate here. They can help addressing the multicollinearity issue in the correlation matrix. Ridge regression and LASSO regression are capable of shrink penalty on the regression coefficient estimates. Shrinkage penalty term has no effect, and regressions will produce the least squares estimates, so it could help stabilize the coefficients and improve the model's interpretability.
