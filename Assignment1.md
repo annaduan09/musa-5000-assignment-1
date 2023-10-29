@@ -15,32 +15,39 @@ output:
 ---
 # Introduction
 
-The ability to accurately predict house values is of great interest to real estate investors, homeowners and policymakers. This analysis examines the relationship between home sale values and select neighborhood attributes in Philadelphia.
+The capability to forecast housing values accurately has significant implications for urban planners, housing policymakers, local communities, and real estate stakeholders. This study delves into how specific neighborhood attributes within Philadelphia influence home sale values, thereby offering insights for urban planning strategies and housing policies.
 
-In a survey of methods and input types for house price prediction, Geerts and colleagues (2023) present a set of variable types for prediction models, including structural features, temporal data, environmental features, and socioeconomic features. For this analysis, we focus on variables from the latter category, specifically the following:
+In their comprehensive research on predictive methodologies for housing values, Geerts and colleagues (2023) delineated several key variable types that could influence housing prices. These categories encompass structural attributes, temporal patterns, environmental conditions, and, importantly for our study, socioeconomic features. Drawing inspiration from their findings, our study zones in on the socioeconomic determinants, detailing the following attributes:
 
-* Percent of residents over 25 with at least a **bachelor’s degree** (PCTBACHMOR)
-* Percent of housing units that are **vacant** (PCTVACANT)
-* Percent of housing units that are detached **single family homes** (PCTSINGLES)
-* Number of households with **income below poverty level** (NBELPOV100)
-* **Median household income**  (MEDHHINC)
+* **Educational attainment**: Percent of residents over 25 with at least a bachelor’s degree (PCTBACHMOR)
+* **Vacancy**: Percent of housing units that are vacant (PCTVACANT)
+* **Single family homes**: Percent of housing units that are detached single family homes (PCTSINGLES)
+* **Poverty**: Number of households with income below poverty level (NBELPOV100)
+* **Median household income** (MEDHHINC)
 
-These indicators present a crude socioeconomic context for a neighborhood, and are well-documented predictors of home prices. Indeed, it is reasonable that residents with higher educational attainment and income are able to afford more expensive homes. Conversely, it is also possible that the arrival of residents with higher socioeconomic status may lead to an eventual increase in property values. Using regression analysis, we find that 66% of variation in log-transformed median home value in Philadelphia can be explained by vacancy rate, households in poverty, single homes, and bachelors degrees. Of these variables, percent of residents with bachelors degrees is the strongest predictor of median home value. However, there is a high rate of clustering in error, and the model is less accurate in certain neighborhoods. In light of this, we recommend that future research is needed to generate a model that can be used reliably across the city.
+While these indicators offer a foundational perspective on the socioeconomic climate of a neighborhood, they also historically serve as robust predictors of housing prices. Urban planning theories often posit that neighborhoods with elevated levels of education and income typically display higher housing values, given the residents' purchasing power. However, the reverse causality, wherein the influx of affluent and educated residents propels property values, cannot be ignored.
+
+Our regression analysis discerns that the aforementioned variables explain approximately 66% of the variance in the log-transformed median home values within Philadelphia. Notably, educational attainment (PCTBACHMOR) emerges as the paramount predictor. Yet, a critical observation lies in the spatial heteroscedasticity, signifying high clustering in errors. This hints at our model's diminished predictive power in certain localized contexts.
+
+Considering these insights, it becomes imperative for urban planners and researchers to delve deeper. A holistic, city-wide model necessitates further exploration to capture the intricate dynamics influencing housing values across diverse Philadelphia neighborhoods.
 
 # Methods  
 ## Data cleaning
-The data in this analysis comes from the US Census Bureau's American Community Survey 5 year estimates.
+The data underpinning this analysis is sourced from the American Community Survey 5-year estimates, a product of the US Census Bureau.
 
-The original dataset of block groups in Philadelphia has 1816 observations. We cleaned the data by removing the following block groups:
-1. Block groups where population < 40
-2. Block groups with no housing units
-3. Block groups where median house value is lower than $10,000
-4. One North Philadelphia block group with a very high outlier for median house value
+The initial dataset encompassed block groups within Philadelphia, tallying to 1816 observations. In ensuring the robustness and relevance of our analysis, certain block groups were prudently excluded based on the following criteria:  
 
-After this cleaning process, we were left with 1720 observations. We additionally load a shapefile of Philadelphia's block-groups and join it to our dataframe for analysis and visualization. 
+* Block groups with a population count of less than 40.    
+* Block groups devoid of any housing units.  
+* Block groups where the median house value fell below the threshold of $10,000.  
+* A specific block group in North Philadelphia identified to have an anomalously high median house value outlier.  
+
+Following this meticulous cleaning procedure, the dataset was refined down to 1720 observations. To bolster the depth of our analysis and facilitate visualization, we incorporated a shapefile demarcating Philadelphia's block groups and subsequently merged it with our core dataframe.
 
 ## Exploratory data analysis  
-To prepare for our regression analysis, we first conduct an exploratory analysis by examining summary statistics as well as distributions of our independent and dependent variables. To test for multicolinearity among our predictors, we also calculate the correlations between each independent variable. The correlation is a measure of how two variables change in relation to each other. The sample correlation coefficient, $r$, ranges from -1, indicating a perfect negative correlation, to 1, indicating a perfect positive correlation. A positive correlation means that the two variables increase together, and a negative correlation means that one decreases as the other increases. A correlation coefficient of 0 indicates no linear relationship between the variables. The sample correlation coefficient $r$ is calculated as follows:
+Prior to the comprehensive regression analysis, it's imperative to conduct a preliminary exploration of the dataset. This entails a scrutiny of summary statistics coupled with a detailed examination of the distribution patterns of our chosen independent and dependent variables. One of the pivotal aspects in regression analysis is the potential multicollinearity among predictors. To assess this, correlations between each independent variable are computed.
+
+Correlation serves as a quantitative gauge of the mutual relationship between two variables. The sample correlation coefficient, denoted by *r*, is bounded within -1 and 1. An *r* value of -1 signifies a perfect negative correlation, whereas an *r* value of 1 indicates a perfect positive correlation. A positive value suggests a direct proportional relationship between the variables, and conversely, a negative value denotes an inverse relationship. A correlation coefficient resting at 0 conveys the absence of any discernible linear relationship between the paired variables. The mathematical formulation for the sample correlation coefficient *r* is as follows:
 
 $$r = \frac{n(\Sigma xy)-(\Sigma x)(\Sigma y)}{\sqrt{[n\Sigma x^{2}-(\Sigma x)^{2}][n\Sigma y^{2}-(\Sigma y)^{2}]}}$$
 Where:  
@@ -52,7 +59,7 @@ Where:
 
 ## Multiple regression analysis
 
-For our regression analysis, we use a multiple regression to analyze the relationship between one dependent variable (median home value) and multiple explanatory variables. Using this, we are able to gauge the strength of the relationship between each predictor and median home value, the direction of the relationship, and the goodness of model fit on our observations. Specifically, it allows us to hold individual predictors in isolation to see how, and if, median home values change in response to a unit change in the predictor.
+In our analytical framework, we employ multiple regression to investigate the relationship between our dependent variable, the median home value, and various explanatory variables. Through this approach, we not only ascertain the magnitude and direction of the relationship between each predictor and the median home value but also assess the overall fit of the model to our dataset. Crucially, this methodology permits us to examine individual predictors in isolation, enabling us to discern how median home value may change in association with a unitary change in a given predictor.
 
 In the following formula, median household value is a function of the following predictors:  
 * **PCTBACHMOR**: Percentage of residents with a bachelor's degree or more.  
@@ -72,23 +79,21 @@ This method relies on the following assumptions:
 * y is continuous and normally distributed
 * predictors are not co-linear (highly-correlated)
 
-Assuming all these conditions are met, we need to calculate the following parameters:
-- $\beta _{0}$
-- $\beta _{k}$
-- $\sigma ^{2}$
-- ....
-
+Assuming all these conditions are met, we need to calculate the following parameters:  
+- $\beta _{0}$  
+- $\beta _{k}$  
+- $\sigma ^{2}$  
 
 [[need to complete this section!!]]
 
 ## Additional Analyses
 ### Stepwise regression
-A regression method from data mining, stepwise regression selects predictors based on which ones generate the smallest value of the Akaike Information Criterion (AIC), a measure of the relative quality of statistical models. Although stepwise regression provides a streamlined method of optimizing a regression model, there is no guarantee that the model will be optimized in any specific sense. It also yields a single final model when there may be multiple equally good ones. Stepwise regression also does not take into account any underlying theory regarding predictor variables, so important variables may be excluded in the optimization process. In this study, we employ stepwise regression as a validation method for our model.
+Stepwise regression, a technique rooted in data mining, systematically selects predictors that minimize the Akaike Information Criterion (AIC), which serves as an index for the relative quality of statistical models. While this method offers an efficient approach to refine regression models, it doesn't assure optimal results in a strict sense. Moreover, stepwise regression often culminates in a singular final model, overlooking the possibility of several models that could be equally valid. An additional limitation is its indifference to underlying theoretical considerations regarding predictors, potentially omitting vital variables during the optimization phase. For the purposes of this study, we only use stepwise regression primarily as a means to validate our model.
 
 ### K-fold cross validation
-In $k$-fold cross validation of a regression model, the set of observations is randomly divided into $k$ folds of approximately equal size. The 1st fold is taken out as a validation test set and the model is fitted on the remaining $k-1$ folds, which comprise the training set. The mean squared error (MSE) is calculated for the 1st fold. This process is repeated $k$ times with a different fold as the test set each time, generating $k$ estimates of MSE. 
+In k-fold cross-validation applied to a regression model, the dataset is randomly partitioned into k subsets of roughly equivalent size. The initial subset serves as the validation set while the model is trained using the remaining k−1 subsets. The mean squared error (MSE) is then computed for this first subset. This procedure is iteratively executed k times, each time designating a distinct subset as the validation set, resulting in k MSE estimates.
 
-The $k$-fold root mean squared error (RMSE) is an estimate of the magnitude of a typical residual, and it is used to compare different models -- the best model is the one with the lowest $k$-fold RMSE. It is calculated by taking the mean of MSEs across folds ($k$-fold MSE), then taking the square root of that value.
+The k-fold root mean squared error (RMSE) represents an estimate of a typical residual's magnitude and serves as a metric to evaluate and compare diverse models. A model with the minimal k-fold RMSE is typically considered superior. This metric is derived by first averaging the MSEs over the k subsets to obtain the k-fold MSE and then extracting the square root of this mean value.
 
 In this study, we set $k=5$.
 
@@ -154,7 +159,7 @@ pander(dat.stat, caption = "Summary Statistics")
 
    4.847        10     16.08     20.07      92.99   17.77     315.8   
 
-   21060      29719    31542     38750      2e+05   16298   265638946 
+   21061      29719    31542     38750      2e+05   16298   265638946 
 
    4.372      9.091    11.29     16.28      77.12   9.628     92.71   
 
@@ -473,14 +478,6 @@ ggplot(dat.log, aes(standard_residuals)) +
   geom_histogram(binwidth = 0.5, fill = "navy") +
   plotTheme() + 
   labs(title = "Histogram of Standardized Residuals")
-```
-
-```
-## Warning: The `size` argument of `element_line()` is deprecated as of ggplot2 3.4.0.
-## ℹ Please use the `linewidth` argument instead.
-## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-## generated.
 ```
 
 ![](Assignment1_files/figure-html/resid hist-1.png)<!-- -->
