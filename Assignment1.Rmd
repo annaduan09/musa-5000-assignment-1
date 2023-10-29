@@ -84,70 +84,85 @@ plotTheme <- function(base_size = 12) {
   )
 } 
 ```
-The ability to accurately predict house values is of great interest to real estate investors, homeowners and policymakers. This analysis examines the relationship between home sale values and select neighborhood attributes in Philadelphia.
+The capability to forecast housing values accurately has significant implications for urban planners, housing policymakers, local communities, and real estate stakeholders. This study delves into how specific neighborhood attributes within Philadelphia influence home sale values, thereby offering insights for urban planning strategies and housing policies.
 
-In a survey of methods and input types for house price prediction, Geerts and colleagues (2023) present a set of variable types for prediction models, including structural features, temporal data, environmental features, and socioeconomic features. For this analysis, we focus on variables from the latter category, specifically the following:
+In their comprehensive research on predictive methodologies for housing values, Geerts and colleagues (2023) delineated several key variable types that could influence housing prices. These categories encompass structural attributes, temporal patterns, environmental conditions, and, importantly for our study, socioeconomic features. Drawing inspiration from their findings, our study zones in on the socioeconomic determinants, detailing the following attributes:
 
-* Percent of residents over 25 with at least a bachelor’s degree (PCTBACHMOR)
-* Percent of housing units that are vacant (PCTVACANT)
-* Percent of housing units that are detached single family houses (PCTSINGLES)
-* Number of households with incomes below poverty level (NBELPOV100)
-* Median household income  (MEDHHINC)
+* **Educational attainment**: Percent of residents over 25 with at least a bachelor’s degree (PCTBACHMOR)
+* **Vacancy**: Percent of housing units that are vacant (PCTVACANT)
+* **Single family homes**: Percent of housing units that are detached single family homes (PCTSINGLES)
+* **Poverty**: Number of households with income below poverty level (NBELPOV100)
+* **Median household income** (MEDHHINC)
 
-These indicators present a crude socioeconomic context for a neighborhood, and are well-documented as predictors of home prices. Indeed, it is reasonable that residents with higher educational attainment and income are able to afford more expensive homes. Conversely, it is also possible that the arrival of residents with higher socioeconomic status may lead to an eventual increase in property values. Using regression analysis, we find that 66% of variation in log-transformed median home value in Philadelphia can be explained by vacancy rate, households in poverty, single homes, and bachelors degrees. Of these variables, percent of residents with bachelors degrees is the strongest predictor of median home value. However, there is a high rate of clustering in error, and the model is less accurate in certain neighborhoods. In light of this, we recommend that future research is needed to generate a model that can be used reliably across the city.
+While these indicators offer a foundational perspective on the socioeconomic climate of a neighborhood, they also historically serve as robust predictors of housing prices. Urban planning theories often posit that neighborhoods with elevated levels of education and income typically display higher housing values, given the residents' purchasing power. However, the reverse causality, wherein the influx of affluent and educated residents propels property values, cannot be ignored.
+
+Our regression analysis discerns that the aforementioned variables explain approximately 66% of the variance in the log-transformed median home values within Philadelphia. Notably, educational attainment (PCTBACHMOR) emerges as the paramount predictor. Yet, a critical observation lies in the spatial heteroscedasticity, signifying high clustering in errors. This hints at our model's diminished predictive power in certain localized contexts.
+
+Considering these insights, it becomes imperative for urban planners and researchers to delve deeper. A holistic, city-wide model necessitates further exploration to capture the intricate dynamics influencing housing values across diverse Philadelphia neighborhoods.
 
 # Methods  
 ## Data cleaning
-The data in this analysis comes from the US Census Bureau's American Community Survey 5 year estimates.
+The data underpinning this analysis is sourced from the American Community Survey 5-year estimates, a product of the US Census Bureau.
 
-The original dataset of block groups in Philadelphia has 1816 observations. We cleaned the data by removing the following block groups:
-1. Block groups where population < 40
-2. Block groups with no housing units
-3. Block groups where median house value is lower than $10,000
-4. One North Philadelphia block group with a very high outlier for median house value
+The initial dataset encompassed block groups within Philadelphia, tallying to 1816 observations. In ensuring the robustness and relevance of our analysis, certain block groups were prudently excluded based on the following criteria:  
 
-After this cleaning process, we were left with 1720 observations. We additionally load a shapefile of Philadelphia's block-groups and join it to our dataframe for analysis and visualization. 
+* Block groups with a population count of less than 40.    
+* Block groups devoid of any housing units.  
+* Block groups where the median house value fell below the threshold of $10,000.  
+* A specific block group in North Philadelphia identified to have an anomalously high median house value outlier.  
+
+Following this meticulous cleaning procedure, the dataset was refined down to 1720 observations. To bolster the depth of our analysis and facilitate visualization, we incorporated a shapefile demarcating Philadelphia's block groups and subsequently merged it with our core dataframe.
 
 ## Exploratory data analysis  
-To prepare for our regression analysis, we first conduct an exploratory analysis by examining summary statistics as well as distributions of our independent and dependent variables. To test for collinearity among our predictors, we also calculate the correlations between each independent variable. The correlation is a measure of how two variables change in relation to each other. The sample correlation coefficient, $r$, ranges from -1, indicating a perfect negative correlation, to 1, indicating a perfect positive correlation. A positive correlation means that the two variables increase together, and a negative correlation means that one decreases as the other increases. A correlation coefficient of 0 indicates no linear relationship between the variables. The sample correlation coefficient $r$ is calculated as follows:
+Prior to the comprehensive regression analysis, it's imperative to conduct a preliminary exploration of the dataset. This entails a scrutiny of summary statistics coupled with a detailed examination of the distribution patterns of our chosen independent and dependent variables. One of the pivotal aspects in regression analysis is the potential multicollinearity among predictors. To assess this, correlations between each independent variable are computed.
+
+Correlation serves as a quantitative gauge of the mutual relationship between two variables. The sample correlation coefficient, denoted by *r*, is bounded within -1 and 1. An *r* value of -1 signifies a perfect negative correlation, whereas an *r* value of 1 indicates a perfect positive correlation. A positive value suggests a direct proportional relationship between the variables, and conversely, a negative value denotes an inverse relationship. A correlation coefficient resting at 0 conveys the absence of any discernible linear relationship between the paired variables. The mathematical formulation for the sample correlation coefficient *r* is as follows:
 
 $$r = \frac{n(\Sigma xy)-(\Sigma x)(\Sigma y)}{\sqrt{[n\Sigma x^{2}-(\Sigma x)^{2}][n\Sigma y^{2}-(\Sigma y)^{2}]}}$$
+Where:  
+- **\( n \)** is the number of paired data points.  
+- **\( \Sigma xy \)** is the sum of the products of the paired observations of x and y.  
+- **\( \Sigma x \)** and **\( \Sigma y \)** are the sums of the x scores and y scores, respectively.  
+- **\( \Sigma x^{2} \)** and **\( \Sigma y^{2} \)** are the sums of the squared x and y values, respectively.  
 
-First, the mean values of both variables x and y are calculated. Then, we find both variables' standard deviations. For each of the n observations in the dataset, we subtract the mean of each variable (__, __) from the observation, and divide the difference (__, __) by the variable's standard deviation (__, __). We then multiply this quotient (__, __) for each observation's x and y variable and sum this product at each observation. Finally, we divide this sum by the number of observations minus 1. 
 
 ## Multiple regression analysis
 
-For our regression analysis, we use a multiple regression to analyze the relationship between one dependent variable (median home value) and multiple explanatory variables. Using this, we are able to gauge the strength of the relationship between each predictor and median home value, the direction of the relationship, and the goodness of model fit on our observations. Specifically, it allows us to hold individual predictors in isolation to see how, and if, median home values change in response to a unit change in the predictor.
+In our analytical framework, we employ multiple regression to investigate the relationship between our dependent variable, the median home value, and various explanatory variables. Through this approach, we not only ascertain the magnitude and direction of the relationship between each predictor and the median home value but also assess the overall fit of the model to our dataset. Crucially, this methodology permits us to examine individual predictors in isolation, enabling us to discern how median home value may change in association with a unitary change in a given predictor.
 
-In the following formula, median household value is a function of ______________________________________________________________, where _______________.
+In the following formula, median household value is a function of the following predictors:  
+* **PCTBACHMOR**: Percentage of residents with a bachelor's degree or more.  
+* **NBELPOV**: Number of households living in poverty.  
+* **PCTVACANT**: Percentage of vacant homes.  
+* **PCTSINGLES**: Percentage of single residents.  
 
-[[insert formula here]]
+The multiple regression model is:  
+\[ \text{Median Home Value}_i = \beta_0 + \beta_1(\text{PCTBACHMOR}_i) + \beta_2(\text{NBELPOV}_i) + \beta_3(\text{PCTVACANT}_i) + \beta_4(\text{PCTSINGLES}_i) + \epsilon_i \]
 
-This method relies on several assumptions:
+Where \( \epsilon_i \) represents the error term for the \( i^{th} \) observation.
 
+This method relies on the following assumptions:  
 * x and y have a linear relationship
 * the residuals are normally distributed, random, and homoscedastic
 * observations and residuals are independent
 * y is continuous and normally distributed
 * predictors are not co-linear (highly-correlated)
 
-Assuming all these conditions are met, we need to calculate the following parameters:
-- $\beta _{0}$
-- $\beta _{k}$
-- $\sigma ^{2}$
-- ....
-
+Assuming all these conditions are met, we need to calculate the following parameters:  
+- $\beta _{0}$  
+- $\beta _{k}$  
+- $\sigma ^{2}$  
 
 [[need to complete this section!!]]
 
 ## Additional Analyses
 ### Stepwise regression
-A regression method from data mining, stepwise regression selects predictors based on which ones generate the smallest value of the Akaike Information Criterion (AIC), a measure of the relative quality of statistical models. Although stepwise regression provides a streamlined method of optimizing a regression model, there is no guarantee that the model will be optimized in any specific sense. It also yields a single final model when there may be multiple equally good ones. Stepwise regression also does not take into account any underlying theory regarding predictor variables, so important variables may be excluded in the optimization process. In this study, we employ stepwise regression as a validation method for our model.
+Stepwise regression, a technique rooted in data mining, systematically selects predictors that minimize the Akaike Information Criterion (AIC), which serves as an index for the relative quality of statistical models. While this method offers an efficient approach to refine regression models, it doesn't assure optimal results in a strict sense. Moreover, stepwise regression often culminates in a singular final model, overlooking the possibility of several models that could be equally valid. An additional limitation is its indifference to underlying theoretical considerations regarding predictors, potentially omitting vital variables during the optimization phase. For the purposes of this study, we only use stepwise regression primarily as a means to validate our model.
 
 ### K-fold cross validation
-In $k$-fold cross validation of a regression model, the set of observations is randomly divided into $k$ folds of approximately equal size. The 1st fold is taken out as a validation test set and the model is fitted on the remaining $k-1$ folds, which comprise the training set. The mean squared error (MSE) is calculated for the 1st fold. This process is repeated $k$ times with a different fold as the test set each time, generating $k$ estimates of MSE. 
+In k-fold cross-validation applied to a regression model, the dataset is randomly partitioned into k subsets of roughly equivalent size. The initial subset serves as the validation set while the model is trained using the remaining k−1 subsets. The mean squared error (MSE) is then computed for this first subset. This procedure is iteratively executed k times, each time designating a distinct subset as the validation set, resulting in k MSE estimates.
 
-The $k$-fold root mean squared error (RMSE) is an estimate of the magnitude of a typical residual, and it is used to compare different models -- the best model is the one with the lowest $k$-fold RMSE. It is calculated by taking the mean of MSEs across folds ($k$-fold MSE), then taking the square root of that value.
+The k-fold root mean squared error (RMSE) represents an estimate of a typical residual's magnitude and serves as a metric to evaluate and compare diverse models. A model with the minimal k-fold RMSE is typically considered superior. This metric is derived by first averaging the MSEs over the k subsets to obtain the k-fold MSE and then extracting the square root of this mean value.
 
 In this study, we set $k=5$.
 
@@ -455,7 +470,7 @@ ggplot(cor.long, aes(Value, LNMEDHVAL)) +
 
 The following histogram shows the frequency distribution of standardized residuals. A standardized residual represents the original residual value divided by the standard deviation of all residuals, producing a standardized value that represents a given residual's distance from the line of best fit. Based on the shape of this distribution, we can estimate that residuals have a slight skew to the left, indicating that the median is greater than the mean.
 
-```{r resid hist}
+```{r resid hist, cache = TRUE}
 ggplot(dat.log, aes(standard_residuals)) +
   geom_histogram(binwidth = 0.5, fill = "navy") +
   plotTheme() + 
@@ -553,33 +568,49 @@ rmse2
 
 
 
-# Discussion and Limitations 
+# Discussion and Limitations   
+## **Analysis Overview**:
 
-In this analysis, we built a model based on ordinary least squares regression to predict median home value using a set of demographic variables at the block group level. These variables were: percent of residents with at least a bachelor's degree, vacancy percent of homes, percent of homes that were detached single family houses, households in poverty, and median household income. To build the model, we conducted exploratory data analysis and checked regression assumptions. To test its validity, we conducted stepwise regression and k-folds cross-validation using a restricted model.
+Using ordinary least squares regression, we sought to predict the median home value based on census demographic variables at the block group level: 
+- Percentage of residents possessing at least a **bachelor's degree**.
+- **Home vacancy rate**.
+- Percentage of detached **single-family homes**.
+- Proportion of **households living in poverty**.
+- **Median household income**.
 
-The model has an adjusted r-squared of 0.66, indicating that our predictors explain 66% of the variation in our dependent variables, log-transformed home values. 
+Our methodology involved an exploratory data analysis followed by a multiple regression analysis in adherence to the standard regression assumptions of linearity in our indicators, no multicolinearity, and homoscedasticity. We tested our model's validity through stepwise regression and k-folds cross-validation, applying the latter to a constrained model variant.
 
-Several noteworthy takeaways emerge from the analysis. Firstly, education emerges as a robust predictor of home value, a finding of particular interest in a city characterized by a dominant "meds and eds" industry. Secondly, while high vacancy rates are common in this post-industrial city, the data suggests that vacancy may not exert a strong influence on home values, possibly due to its widespread prevalence. Similarly, the presence of single homes does not appear to significantly impact home values, a trend that may be linked to gentrification dynamics where the immediate neighborhood composition may matter less. Finally, the strong predictive power of household income and poverty rate in a highly racially and socioeconomically segregated city aligns with expectations, as these variables are closely tied to the overall living environment and quality, shedding light on the intricate interplay between socio-demographic factors and housing values in this urban setting.
+Our final model yielded an adjusted \( R^2 \) of 0.66. This suggests that our selected predictors account for 66% of the variance in median home values at the census block group level in Philadelphia.
 
-Limitations:
-- high spatial autocorrelation in errors, meaning the generalizability of this model is low and it doesn't predict well across different types of neighborhood contexts
-- limited sample size inherent in census data - requires people to response
-- skewed sample (low-income, low-ses, minority, non english speaking communities are less likely to answer census, leading to lower representation in neighborhoods)
-- heterscedasticity in standard error - 
-- unclear what the remaining 33% of 
+## **Key Findings**:
 
-Recommendations:
-- good for looking at individual predictors
-- interesting for policy/academic research
-- would not use for industry/real estate
+1. **Educational attainment**: A notable finding was the strong influence of education levels on home values. This aligns with the dominance of _"meds and eds"_ in Philadelphia's local economy.
+2. **Vacancy Rates**: Despite high vacancy rates typical of post-industrial cities, our data suggests that home values aren't meaningfully impacted by vacancy, possibly due to its pervasive nature.
+3. **Single-Family Homes**: The prevalence of detached single-family homes didn't notably impact home values. This could be linked to gentrification processes where the composition of the immediate neighborhood becomes secondary.
+4. **Income and Poverty Dynamics**: The potent predictive value of median household income and poverty rates in a racially and socioeconomically stratified city was anticipated. These metrics mirror the broader living environment, providing insights into the relationship between socio-demographic elements and housing values in urban locales.
 
-Model Evaluation:
-Based on the results of our regression, the 4 predictors are all considered as significant in predicting the median home value. Therefore, the model is relatively robust and each predictor can explain some of the variance of the dependent variable.
-The k-fold cross-validation result tells that model with 4 predictors has a lower root mean square error (RMSE) than model with only 2 predictors, which suggests that more predictors help to improve the predicting ability of variance of the dependent variable of median home value.
-The other predictor that can be associate with our model can be safety. Safer neighborhoods are generally considered to have a higher median home value than areas with more crimes.
+## **Limitations**:
 
-Assumptions Violations:
-The scatterplots of the dependent variable and predictors indicate violations of the linearity and homoscedasticity assumptions. Additionally, the histogram of standardized residuals suggests a slight left skew, which may affect the accuracy of the model's predictions. Moreover, the multicollinearity in the correlation matrix implies inaccuracy of the model. Also, utilizing the raw number of households living in poverty (NBELPOV100) as a predictor might skew the impact of poverty on median home values for it does not account for the variance of population size across regions. 
+- **Spatial Autocorrelation**: A substantial spatial autocorrelation in the residuals was observed, undermining the model's generalizability across diverse neighborhood contexts.
+- **Sample Size**: The census data, which is reliant on household response rates, has inherent limitations regarding sample size.
+- **Sample Bias**: Underrepresented groups such as those with lower income, socioeconomic status, non-English speakers, and minorities, are less likely to respond to the census, resulting in a sample bias which can skew certain variables associated with household demographics.
+- **Heteroscedasticity**: A non-constant variance (heteroscedasticity) was noted in the standard errors.
+- **Unexplained Variance**: The model doesn't account for approximately 33% of the variance in home values in Philadelphia block groups.
 
-Ridge or LASSO regression?
-The Ridge or LASSO regression are appropriate here. They can help addressing the multicollinearity issue in the correlation matrix. Ridge regression and LASSO regression are capable of shrink penalty on the regression coefficient estimates. Shrinkage penalty term has no effect, and regressions will produce the least squares estimates, so it could help stabilize the coefficients and improve the model's interpretability.
+## **Recommendations**:
+
+- **Policy and Research**: The model offers valuable insights for policymakers and academic research, particularly with regards to the relationship between educational attainment and home values. This finding could be expanded upon with implications for real estate development and affordable housing policy around large educational institutions such as Temple, Drexel, and Penn.
+
+- **Industry Caution**: Given its limitations, the model might not be apt for real estate or related industries. 
+
+## **Model Evaluation**:
+
+Our regression results highlight that all four predictors significantly influence median home value. The model exhibits a strong goodness of fit with each predictor explaining some variance in the outcome. Cross-validation results emphasize the advantage of a four-predictor model over its two-predictor counterpart, evident through a reduced RMSE. Potential supplementary predictors, like neighborhood safety, could further refine the model since safer locales tend to have higher home values. Higher resolution data such as point-level amenity data could further improve the model, as census demographic variables often share similar spatial distributions.
+
+## **Assumptions Violations**:
+
+Visual inspections of scatter plots indicate breaches of the linearity and homoscedasticity assumptions. The histogram of standardized residuals hints at a mild left-skew. The presence of multicolinearity, as revealed in the correlation matrix, poses threats to model accuracy. Using raw counts of households in poverty could distort its impact on home values, failing to account for variation in population size across block groups.
+
+## **Ridge or LASSO Regression**:
+
+Considering the multicolinearity issue, Ridge and LASSO regression could be effective Both methods introduce a shrinkage penalty on coefficient estimates, ensuring more stable coefficients and enhancing the model's ease of interpretation.

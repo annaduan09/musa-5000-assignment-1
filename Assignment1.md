@@ -1,7 +1,7 @@
 ---
 title: "MUSA5000 Assignment 1"
 author: "Anna Duan, Jingyi Li, and Jamie Song"
-date: "2023-10-27"
+date: "2023-10-28"
 output:
   html_document:
     keep_md: yes
@@ -19,13 +19,13 @@ The ability to accurately predict house values is of great interest to real esta
 
 In a survey of methods and input types for house price prediction, Geerts and colleagues (2023) present a set of variable types for prediction models, including structural features, temporal data, environmental features, and socioeconomic features. For this analysis, we focus on variables from the latter category, specifically the following:
 
-* Percent of residents over 25 with at least a bachelor’s degree (PCTBACHMOR)
-* Percent of housing units that are vacant (PCTVACANT)
-* Percent of housing units that are detached single family houses (PCTSINGLES)
-* Number of households with incomes below poverty level (NBELPOV100)
-* Median household income  (MEDHHINC)
+* Percent of residents over 25 with at least a **bachelor’s degree** (PCTBACHMOR)
+* Percent of housing units that are **vacant** (PCTVACANT)
+* Percent of housing units that are detached **single family homes** (PCTSINGLES)
+* Number of households with **income below poverty level** (NBELPOV100)
+* **Median household income**  (MEDHHINC)
 
-These indicators present a crude socioeconomic context for a neighborhood, and are well-documented as predictors of home prices. Indeed, it is reasonable that residents with higher educational attainment and income are able to afford more expensive homes. Conversely, it is also possible that the arrival of residents with higher socioeconomic status may lead to an eventual increase in property values. Using regression analysis, we find that __________________________. In light of this, we recommend that _________. Future research is needed _______________________.
+These indicators present a crude socioeconomic context for a neighborhood, and are well-documented predictors of home prices. Indeed, it is reasonable that residents with higher educational attainment and income are able to afford more expensive homes. Conversely, it is also possible that the arrival of residents with higher socioeconomic status may lead to an eventual increase in property values. Using regression analysis, we find that 66% of variation in log-transformed median home value in Philadelphia can be explained by vacancy rate, households in poverty, single homes, and bachelors degrees. Of these variables, percent of residents with bachelors degrees is the strongest predictor of median home value. However, there is a high rate of clustering in error, and the model is less accurate in certain neighborhoods. In light of this, we recommend that future research is needed to generate a model that can be used reliably across the city.
 
 # Methods  
 ## Data cleaning
@@ -40,22 +40,32 @@ The original dataset of block groups in Philadelphia has 1816 observations. We c
 After this cleaning process, we were left with 1720 observations. We additionally load a shapefile of Philadelphia's block-groups and join it to our dataframe for analysis and visualization. 
 
 ## Exploratory data analysis  
-To prepare for our regression analysis, we first conduct an exploratory analysis by examining summary statistics as well as distributions of our independent and dependent variables. To test for collinearity among our predictors, we also calculate the correlations between each independent variable. The correlation is a measure of how two variables change in relation to each other. The sample correlation coefficient, $r$, ranges from -1, indicating a perfect negative correlation, to 1, indicating a perfect positive correlation. A positive correlation means that the two variables increase together, and a negative correlation means that one decreases as the other increases. A correlation coefficient of 0 indicates no linear relationship between the variables. The sample correlation coefficient $r$ is calculated as follows:
+To prepare for our regression analysis, we first conduct an exploratory analysis by examining summary statistics as well as distributions of our independent and dependent variables. To test for multicolinearity among our predictors, we also calculate the correlations between each independent variable. The correlation is a measure of how two variables change in relation to each other. The sample correlation coefficient, $r$, ranges from -1, indicating a perfect negative correlation, to 1, indicating a perfect positive correlation. A positive correlation means that the two variables increase together, and a negative correlation means that one decreases as the other increases. A correlation coefficient of 0 indicates no linear relationship between the variables. The sample correlation coefficient $r$ is calculated as follows:
 
 $$r = \frac{n(\Sigma xy)-(\Sigma x)(\Sigma y)}{\sqrt{[n\Sigma x^{2}-(\Sigma x)^{2}][n\Sigma y^{2}-(\Sigma y)^{2}]}}$$
+Where:  
+- **\( n \)** is the number of paired data points.  
+- **\( \Sigma xy \)** is the sum of the products of the paired observations of x and y.  
+- **\( \Sigma x \)** and **\( \Sigma y \)** are the sums of the x scores and y scores, respectively.  
+- **\( \Sigma x^{2} \)** and **\( \Sigma y^{2} \)** are the sums of the squared x and y values, respectively.  
 
-First, the mean values of both variables x and y are calculated. Then, we find both variables' standard deviations. For each of the n observations in the dataset, we subtract the mean of each variable (__, __) from the observation, and divide the difference (__, __) by the variable's standard deviation (__, __). We then multiply this quotient (__, __) for each observation's x and y variable and sum this product at each observation. Finally, we divide this sum by the number of observations minus 1. 
 
 ## Multiple regression analysis
 
 For our regression analysis, we use a multiple regression to analyze the relationship between one dependent variable (median home value) and multiple explanatory variables. Using this, we are able to gauge the strength of the relationship between each predictor and median home value, the direction of the relationship, and the goodness of model fit on our observations. Specifically, it allows us to hold individual predictors in isolation to see how, and if, median home values change in response to a unit change in the predictor.
 
-In the following formula, median household value is a function of ______________________________________________________________, where _______________.
+In the following formula, median household value is a function of the following predictors:  
+* **PCTBACHMOR**: Percentage of residents with a bachelor's degree or more.  
+* **NBELPOV**: Number of households living in poverty.  
+* **PCTVACANT**: Percentage of vacant homes.  
+* **PCTSINGLES**: Percentage of single residents.  
 
-[[insert formula here]]
+The multiple regression model is:  
+\[ \text{Median Home Value}_i = \beta_0 + \beta_1(\text{PCTBACHMOR}_i) + \beta_2(\text{NBELPOV}_i) + \beta_3(\text{PCTVACANT}_i) + \beta_4(\text{PCTSINGLES}_i) + \epsilon_i \]
 
-This method relies on several assumptions:
+Where \( \epsilon_i \) represents the error term for the \( i^{th} \) observation.
 
+This method relies on the following assumptions:  
 * x and y have a linear relationship
 * the residuals are normally distributed, random, and homoscedastic
 * observations and residuals are independent
@@ -338,12 +348,12 @@ The logarithm transformed regression model has a multiple $R^2$ of 0.6623 and ad
 ### Vacancy rate and households in poverty
 PCTVACANT and LNNBELPOV100 are negatively associated with median home value, indicating that increases in vacancy and poverty rate are associated with decreases in home prices.
 
-The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of log-transformed median home value. Similarly, a 1-unit increase in the household in poverty is associated with a decrease of 0.0789054 in the median home value. In practical terms, a 1% increase in PCTSINGLES and PCTBACHMOR respectively lead to a $______ and $_____ increase in median home value. 
+The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of log-transformed median home value. Similarly, a 1-unit increase in the log-transformed share of households in poverty (LNNBELPOV100) is associated with a decrease of 0.0789054 in the median home value. In practical terms, a 1% increase in PCTVACANT and LNNBELPOV100 respectively lead to a $191.57 and $789.05 decrease in median home value.
 
 ### Single homes and bachelors degrees
 PCTSINGLES and PCTBACHMOR are positively associated with median home value, meaning that increases in educational attainment and single homes are associated with increases in home prices. 
 
-PCTSINGLES and PCTBACHMOR have the estimates of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home unit and percentage of individuals with bachelor degree is individually associated with an increase of 0.0029769 and 0.209098 in log-transformed median home value. In other words, a 1% increase in PCTSINGLES and PCTBACHMOR respectively lead to a $______ and $_____ increase in median home value. 
+PCTSINGLES and PCTBACHMOR have the estimates of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home units and the percentage of individuals with a bachelor's degree is individually associated with an increase of 0.0029769 and 0.209098 in log-transformed median home value. In other words, a 1% increase in PCTSINGLES and PCTBACHMOR respectively leads to a $29.77 and $209.10 increase in median home value.
 
 ### Accuracy
 The standard error measures the variability and precision of the estimate, with lower values indicating higher precision. The t value measures the strength of the relationship between the predictor and the dependent variable. Higher absolute t values indicate a stronger relationship. In this regression, PCTBACHMOR has the highest absolute t value of 38.494 indicating its strongest relationship with median home value, and PCTSINGLES has the lowest absolute t value of 4.234, meaning it has the weakest relationship with median home value.
@@ -423,7 +433,7 @@ dat.log$standard_residuals <- rstandard(reg)
 
 # Regression Assumption Checks 
 
-In this section, we will conduct tests on model assumptions. We have observed the distributions of variables earlier, and will continue to investigate these in the following figures.
+In this section, we conduct tests on model assumptions. We have observed the distributions of variables earlier, and will continue to investigate these in the following figures.
 
 ## Scatterplots of dependent variable and predictors
 
@@ -465,6 +475,14 @@ ggplot(dat.log, aes(standard_residuals)) +
   labs(title = "Histogram of Standardized Residuals")
 ```
 
+```
+## Warning: The `size` argument of `element_line()` is deprecated as of ggplot2 3.4.0.
+## ℹ Please use the `linewidth` argument instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+```
+
 ![](Assignment1_files/figure-html/resid hist-1.png)<!-- -->
 
 ## Scatterplot of standardized residuals
@@ -492,7 +510,6 @@ Based on the previous maps of LNMEDHVAL and predictor variables across Philadelp
 
 
 ## Chloropleth map of residuals
-
 The following map displays standardized residuals across Philadelphia. Negative residual values appear to cluster in certain areas in North Philadelphia, indicating the possible presence of substantial spatial autocorrelation.
 
 
@@ -615,43 +632,49 @@ rmse2
 
 
 
-# Discussion and Limitations 
+# Discussion and Limitations   
+## **Analysis Overview**:
 
-In this analysis, we built a model based on ordinary least squares regression to predict median home value using a set of demographic variables at the block group level. These variables were: percent of residents with at least a bachelor's degree, vacancy percent of homes, percent of homes that were detached single family houses, households in poverty, and median household income. To build the model, we conducted exploratory data analysis and checked regression assumptions. To test its validity, we conducted stepwise regression and k-folds cross-validation using a restricted model.
+Using ordinary least squares regression, we sought to predict the median home value based on census demographic variables at the block group level: 
+- Percentage of residents possessing at least a **bachelor's degree**.
+- **Home vacancy rate**.
+- Percentage of detached **single-family homes**.
+- Proportion of **households living in poverty**.
+- **Median household income**.
 
-The model has an adjusted r-squared of 0.66, indicating that our predictors explain 66% of the variation in our dependent variables, log-transformed home values. 
+Our methodology involved an exploratory data analysis followed by a multiple regression analysis in adherence to the standard regression assumptions of linearity in our indicators, no multicolinearity, and homoscedasticity. We tested our model's validity through stepwise regression and k-folds cross-validation, applying the latter to a constrained model variant.
 
-Takeaways:
-- education strongly predictive of home value - this is interesting in a city defined by "meds and eds" and full of colleges
-- vacancy: post-industrial city, high rates of vacancy generally
-- single homes not predictive: maybe because of gentrification, surrounding homes don't necessarily matter?
-Limitations:
-- high spatial autocorrelation in errors
-- limited sample size inherent in census (low participation rate)
-- skewed sample (low-income, low-ses, minority communities less likely to answer census)
-- under-predicts in north philly
+Our final model yielded an adjusted \( R^2 \) of 0.66. This suggests that our selected predictors account for 66% of the variance in median home values at the census block group level in Philadelphia.
 
-Recommendations:
-- good for looking at individual predictors
-- interesting for policy/academic research
-- would not use for industry/real estate
+## **Key Findings**:
 
-> Talk about the quality of the model – that is, state if this is a good model
-overall (e.g., R2, F-ratio test), and what other predictors that we didn’t
-include in our model might be associated with our dependent variable.
-i. Looking at the stepwise regression results, did the final model
-include all 4 predictors or were some dropped? What does that tell
-you about the quality of the model?
-ii. Looking at the cross-validation results, was the RMSE better for the
-4 predictor model or the 2 predictor model?
-c) If you haven’t done that in the Results section, talk explicitly about the
-limitations of the model – that is, mention which assumptions were
-violated, and if applicable, how that may affect the model/parameter
-estimation/estimated significance.
-i. In addition, talk about the limitations of using the NBELPOV100
-variable as a predictor – that is, what are some limitations of using
-the raw number of households living in poverty rather than a
-percentage?
-d) Would it make sense to run Ridge or LASSO regression here? Explain briefly
-(~4-5 sentences) what these methods are, when they’re used, and why
-they would or would not be appropriate here.
+1. **Educational attainment**: A notable finding was the strong influence of education levels on home values. This aligns with the dominance of _"meds and eds"_ in Philadelphia's local economy.
+2. **Vacancy Rates**: Despite high vacancy rates typical of post-industrial cities, our data suggests that home values aren't meaningfully impacted by vacancy, possibly due to its pervasive nature.
+3. **Single-Family Homes**: The prevalence of detached single-family homes didn't notably impact home values. This could be linked to gentrification processes where the composition of the immediate neighborhood becomes secondary.
+4. **Income and Poverty Dynamics**: The potent predictive value of median household income and poverty rates in a racially and socioeconomically stratified city was anticipated. These metrics mirror the broader living environment, providing insights into the relationship between socio-demographic elements and housing values in urban locales.
+
+## **Limitations**:
+
+- **Spatial Autocorrelation**: A substantial spatial autocorrelation in the residuals was observed, undermining the model's generalizability across diverse neighborhood contexts.
+- **Sample Size**: The census data, which is reliant on household response rates, has inherent limitations regarding sample size.
+- **Sample Bias**: Underrepresented groups such as those with lower income, socioeconomic status, non-English speakers, and minorities, are less likely to respond to the census, resulting in a sample bias which can skew certain variables associated with household demographics.
+- **Heteroscedasticity**: A non-constant variance (heteroscedasticity) was noted in the standard errors.
+- **Unexplained Variance**: The model doesn't account for approximately 33% of the variance in home values in Philadelphia block groups.
+
+## **Recommendations**:
+
+- **Policy and Research**: The model offers valuable insights for policymakers and academic research, particularly with regards to the relationship between educational attainment and home values. This finding could be expanded upon with implications for real estate development and affordable housing policy around large educational institutions such as Temple, Drexel, and Penn.
+
+- **Industry Caution**: Given its limitations, the model might not be apt for real estate or related industries. 
+
+## **Model Evaluation**:
+
+Our regression results highlight that all four predictors significantly influence median home value. The model exhibits a strong goodness of fit with each predictor explaining some variance in the outcome. Cross-validation results emphasize the advantage of a four-predictor model over its two-predictor counterpart, evident through a reduced RMSE. Potential supplementary predictors, like neighborhood safety, could further refine the model since safer locales tend to have higher home values. Higher resolution data such as point-level amenity data could further improve the model, as census demographic variables often share similar spatial distributions.
+
+## **Assumptions Violations**:
+
+Visual inspections of scatter plots indicate breaches of the linearity and homoscedasticity assumptions. The histogram of standardized residuals hints at a mild left-skew. The presence of multicolinearity, as revealed in the correlation matrix, poses threats to model accuracy. Using raw counts of households in poverty could distort its impact on home values, failing to account for variation in population size across block groups.
+
+## **Ridge or LASSO Regression**:
+
+Considering the multicolinearity issue, Ridge and LASSO regression could be effective Both methods introduce a shrinkage penalty on coefficient estimates, ensuring more stable coefficients and enhancing the model's ease of interpretation.
