@@ -1,7 +1,7 @@
 ---
 title: "MUSA5000 Assignment 1"
 author: "Anna Duan, Jingyi Li, and Jamie Song"
-date: "2023-10-28"
+date: "2023-10-30"
 output:
   html_document:
     keep_md: yes
@@ -15,9 +15,9 @@ output:
 ---
 # Introduction
 
-The capability to forecast housing values accurately has significant implications for urban planners, housing policymakers, local communities, and real estate stakeholders. This study delves into how specific neighborhood attributes within Philadelphia influence home sale values, thereby offering insights for urban planning strategies and housing policies.
+The ability to accurately forecast home values is of great interest to urban planners, housing policymakers, local communities, and real estate stakeholders. This study delves into how specific neighborhood attributes within Philadelphia influence home sale values, thereby offering insights for urban planning strategies and housing policies.
 
-In their comprehensive research on predictive methodologies for housing values, Geerts and colleagues (2023) delineated several key variable types that could influence housing prices. These categories encompass structural attributes, temporal patterns, environmental conditions, and, importantly for our study, socioeconomic features. Drawing inspiration from their findings, our study zones in on the socioeconomic determinants, detailing the following attributes:
+In their comprehensive research on predictive methodologies for housing values, Geerts and colleagues (2023) delineated several key variable types that could influence housing prices. These categories encompass structural attributes, temporal patterns, environmental conditions, and, importantly for our study, socioeconomic features. Drawing inspiration from their findings, our study focuses on socioeconomic determinants, detailing the following attributes:
 
 * **Educational attainment**: Percent of residents over 25 with at least a bachelor’s degree (PCTBACHMOR)
 * **Vacancy**: Percent of housing units that are vacant (PCTVACANT)
@@ -25,32 +25,33 @@ In their comprehensive research on predictive methodologies for housing values, 
 * **Poverty**: Number of households with income below poverty level (NBELPOV100)
 * **Median household income** (MEDHHINC)
 
-While these indicators offer a foundational perspective on the socioeconomic climate of a neighborhood, they also historically serve as robust predictors of housing prices. Urban planning theories often posit that neighborhoods with elevated levels of education and income typically display higher housing values, given the residents' purchasing power. However, the reverse causality, wherein the influx of affluent and educated residents propels property values, cannot be ignored.
+Not only do these indicators offer a foundational perspective on the socioeconomic climate of a neighborhood, but they also historically serve as robust predictors of housing prices. Urban planning theories often posit that neighborhoods with elevated levels of education and income typically display higher home values, given residents' greater purchasing power. However, the reverse causality, wherein the influx of affluent and educated residents propels higher property values, cannot be ignored.
 
-Our regression analysis discerns that the aforementioned variables explain approximately 66% of the variance in the log-transformed median home values within Philadelphia. Notably, educational attainment (PCTBACHMOR) emerges as the paramount predictor. Yet, a critical observation lies in the spatial heteroscedasticity, signifying high clustering in errors. This hints at our model's diminished predictive power in certain localized contexts.
+Our regression analysis found that the aforementioned variables explain approximately 66% of the variance in log-transformed median home values within Philadelphia. Notably, educational attainment (PCTBACHMOR) emerges as the strongest predictor. Yet, a critical observation lies in the spatial heteroscedasticity, signifying high clustering in errors. This hints at our model's lower predictive power in certain local contexts.
 
-Considering these insights, it becomes imperative for urban planners and researchers to delve deeper. A holistic, city-wide model necessitates further exploration to capture the intricate dynamics influencing housing values across diverse Philadelphia neighborhoods.
+Considering these insights, it behooves urban planners and researchers to delve deeper -- a holistic, city-wide model necessitates further exploration to capture the intricate dynamics influencing housing values across Philadelphia's diverse neighborhoods.
 
 # Methods  
 ## Data cleaning
-The data underpinning this analysis is sourced from the American Community Survey 5-year estimates, a product of the US Census Bureau.
+The data underpinning this analysis are sourced from the American Community Survey 5-year estimates, a product of the US Census Bureau.
 
-The initial dataset encompassed block groups within Philadelphia, tallying to 1816 observations. In ensuring the robustness and relevance of our analysis, certain block groups were prudently excluded based on the following criteria:  
+The initial dataset encompassed block groups within Philadelphia, tallying to 1816 observations. To ensure the robustness and relevance of our analysis, certain block groups were prudently excluded based on the following criteria:
 
 * Block groups with a population count of less than 40.    
-* Block groups devoid of any housing units.  
+* Block groups without any housing units.  
 * Block groups where the median house value fell below the threshold of $10,000.  
 * A specific block group in North Philadelphia identified to have an anomalously high median house value outlier.  
 
-Following this meticulous cleaning procedure, the dataset was refined down to 1720 observations. To bolster the depth of our analysis and facilitate visualization, we incorporated a shapefile demarcating Philadelphia's block groups and subsequently merged it with our core dataframe.
+With this cleaning procedure, the dataset was refined down to 1720 observations. To bolster the depth of our analysis and facilitate visualization, we incorporated a shapefile demarcating Philadelphia's block groups and merged it with our core dataframe.
 
 ## Exploratory data analysis  
-Prior to the comprehensive regression analysis, it's imperative to conduct a preliminary exploration of the dataset. This entails a scrutiny of summary statistics coupled with a detailed examination of the distribution patterns of our chosen independent and dependent variables. One of the pivotal aspects in regression analysis is the potential multicollinearity among predictors. To assess this, correlations between each independent variable are computed.
+Prior to comprehensive regression analysis, we conduct a preliminary exploration of the dataset. This entails a scrutiny of summary statistics coupled with a detailed look at the distributions of our chosen independent and dependent variables. An important problem to investigate in regression analysis is potential multicollinearity among predictors. To assess this, correlations between each independent variable are computed.
 
-Correlation serves as a quantitative gauge of the mutual relationship between two variables. The sample correlation coefficient, denoted by *r*, is bounded within -1 and 1. An *r* value of -1 signifies a perfect negative correlation, whereas an *r* value of 1 indicates a perfect positive correlation. A positive value suggests a direct proportional relationship between the variables, and conversely, a negative value denotes an inverse relationship. A correlation coefficient resting at 0 conveys the absence of any discernible linear relationship between the paired variables. The mathematical formulation for the sample correlation coefficient *r* is as follows:
+Correlation serves as a quantitative gauge of the mutual relationship between two variables. The sample correlation coefficient, denoted by *r*, is bounded within -1 and 1. An *r* value of -1 indicates a perfect negative correlation, whereas an *r* value of 1 indicates a perfect positive correlation. A positive value denotes a direct proportional relationship between the variables, and conversely, a negative value denotes an inverse relationship. A correlation coefficient of 0 shows the lack of any discernible linear relationship between the paired variables. The mathematical formula for the sample correlation coefficient *r* is as follows:
 
 $$r = \frac{n(\Sigma xy)-(\Sigma x)(\Sigma y)}{\sqrt{[n\Sigma x^{2}-(\Sigma x)^{2}][n\Sigma y^{2}-(\Sigma y)^{2}]}}$$
-Where:  
+Where:
+
 - **\( n \)** is the number of paired data points.  
 - **\( \Sigma xy \)** is the sum of the products of the paired observations of x and y.  
 - **\( \Sigma x \)** and **\( \Sigma y \)** are the sums of the x scores and y scores, respectively.  
@@ -59,41 +60,67 @@ Where:
 
 ## Multiple regression analysis
 
-In our analytical framework, we employ multiple regression to investigate the relationship between our dependent variable, the median home value, and various explanatory variables. Through this approach, we not only ascertain the magnitude and direction of the relationship between each predictor and the median home value but also assess the overall fit of the model to our dataset. Crucially, this methodology permits us to examine individual predictors in isolation, enabling us to discern how median home value may change in association with a unitary change in a given predictor.
+In our analytic framework, we employ multiple regression to investigate the relationship between our dependent variable, median home value, and various explanatory variables. Through this approach, we not only ascertain the magnitude and direction of the relationship between each predictor and the median home value, but also assess the overall fit of the model to our dataset. Crucially, this methodology permits us to examine individual predictors in isolation and explore how median home value may change in association with a unitary change in a given predictor.
 
-In the following formula, median household value is a function of the following predictors:  
-* **PCTBACHMOR**: Percentage of residents with a bachelor's degree or more.  
+In the following formula, median household value is a function of the following predictors:
+
+* **PCTBACHMOR**: Percent of residents with a bachelor's degree or more.  
 * **NBELPOV**: Number of households living in poverty.  
-* **PCTVACANT**: Percentage of vacant homes.  
-* **PCTSINGLES**: Percentage of single residents.  
+* **PCTVACANT**: Percent of vacant homes.  
+* **PCTSINGLES**: Percent of homes that are single family homes.  
 
 The multiple regression model is:  
-\[ \text{Median Home Value}_i = \beta_0 + \beta_1(\text{PCTBACHMOR}_i) + \beta_2(\text{NBELPOV}_i) + \beta_3(\text{PCTVACANT}_i) + \beta_4(\text{PCTSINGLES}_i) + \epsilon_i \]
+$$ \text{Median Home Value}_i = \beta_0 + \beta_1(\text{PCTBACHMOR}_i) + \beta_2(\text{NBELPOV}_i) + \beta_3(\text{PCTVACANT}_i) + \beta_4(\text{PCTSINGLES}_i) + \epsilon_i $$
 
-Where \( \epsilon_i \) represents the error term for the \( i^{th} \) observation.
+Where $\beta_i$ represents the coefficient of an independent variable, or the direction and amount by which the dependent variable changes when the predictor increases by one unit. \( \epsilon_i \) represents the error term for the \( i^{th} \) observation.
 
-This method relies on the following assumptions:  
+This method relies on the following assumptions:
+
 * x and y have a linear relationship
 * the residuals are normally distributed, random, and homoscedastic
 * observations and residuals are independent
 * y is continuous and normally distributed
 * predictors are not co-linear (highly-correlated)
 
-Assuming all these conditions are met, we need to calculate the following parameters:  
-- $\beta _{0}$  
-- $\beta _{k}$  
-- $\sigma ^{2}$  
+Assuming all these conditions are met, we need to calculate the following parameters:
 
-[[need to complete this section!!]]
+- $\beta _{0}$, the y-intercept;
+- $\beta _{i}$, representing the coefficients of the independent variables ($\beta_{0}, \beta_{1}, ..., \beta_{k}$);
+- $\sigma ^{2}$, which is the variance or MSE.
+
+The values of $\beta _{0}$ $\beta _{i}$ are chosen simultaneously to minimize the expression for the Error Sum of Squares (SSE), which is calculated in the following equations:
+$$SSE=\sum_{i=1}^{n}\epsilon^{2}=\sum_{i=1}^{n}(y-\hat{y})^{2}=\sum_{i=1}^{n}(y_{i}-\hat{\beta_{0}}-\hat{\beta_{1}}x_{1i}-\hat{\beta_{2}}x_{2i}-\dots-\hat{\beta_{k}}x_{ki})^{2}$$
+
+The variance $\sigma^2$ determines the amount of variability inherent in the regression model, or the Mean Squared Error (MSE). It is estimated using the following formula:
+$$\sigma^2 = s^2 = \frac{SSE}{n-(k+1)} = MSE$$
+Where $n$ is the number of observations, and $k$ is the number of predictors.
+
+$R^2$ is the coefficient of multiple determination, or the proportion of variance in the model explained by all k predictors. It is calculated using the following formula:
+$$R^2=1-\frac{SSE}{\Sigma(y_{i}-\overline{y}_{i})^2}$$
+Where $\Sigma(y_{i}-\overline{y}_{i})^2$ is equal to the sum of squared deviations about the sample mean of the observed y values, or the total sum of squares ($SST$).
+
+Because adding more predictors will generally increase $R^2$, it is typically adjusted for the number of predictors using the following formula:
+$$R^2_{adj} = \frac{(n-1)R^{2}-k}{n-(k+1)}$$
+Where, again, $n$ is the number of observations, and $k$ is the number of predictors.
+
+For hypothesis testing, we employ the f-test, which tests the null hypothesis that all coefficients in the model are (jointly) equal to zero vs. the alternative hypothesis that at least 1 of the coefficients is not 0. The hypotheses are formally defined below:
+
+$H_{0}:\beta_{1}=\beta_{2}=\dots=\beta_{k}=0$ 
+
+$H_{a}:\beta_{1}\neq0$ or $\beta_{2}\neq0$ or $\dots$ or $\beta_{k}\neq0$
+
+We also test the following hypotheses for each predictor $i$:
+
+$H_{0i}:\beta_{i}=0, H_{ai}:\beta_{i}\neq0$
 
 ## Additional Analyses
 ### Stepwise regression
-Stepwise regression, a technique rooted in data mining, systematically selects predictors that minimize the Akaike Information Criterion (AIC), which serves as an index for the relative quality of statistical models. While this method offers an efficient approach to refine regression models, it doesn't assure optimal results in a strict sense. Moreover, stepwise regression often culminates in a singular final model, overlooking the possibility of several models that could be equally valid. An additional limitation is its indifference to underlying theoretical considerations regarding predictors, potentially omitting vital variables during the optimization phase. For the purposes of this study, we only use stepwise regression primarily as a means to validate our model.
+Stepwise regression, a technique rooted in data mining, systematically selects predictors that minimize the Akaike Information Criterion (AIC), which serves as an index for the relative quality of statistical models. Although this method offers an efficient approach to refine regression models, it does not assure optimal results in any specific sense. Stepwise regression also culminates in a singular final model, overlooking the possibility of several models that could be equally valid. An additional limitation is its indifference to underlying theoretical considerations regarding predictors, potentially omitting vital variables during the optimization phase. For the purposes of this study, we only use stepwise regression primarily as a means to validate our model.
 
 ### K-fold cross validation
-In k-fold cross-validation applied to a regression model, the dataset is randomly partitioned into k subsets of roughly equivalent size. The initial subset serves as the validation set while the model is trained using the remaining k−1 subsets. The mean squared error (MSE) is then computed for this first subset. This procedure is iteratively executed k times, each time designating a distinct subset as the validation set, resulting in k MSE estimates.
+In k-fold cross-validation applied to a regression model, the dataset is randomly partitioned into k subsets of roughly equivalent size. The initial subset serves as the validation set while the model is trained using the remaining k−1 subsets. The mean squared error (MSE) is then computed for this first subset. This procedure is iteratively executed k times, each time designating a distinct subset as the validation set, resulting in k estimates of MSE.
 
-The k-fold root mean squared error (RMSE) represents an estimate of a typical residual's magnitude and serves as a metric to evaluate and compare diverse models. A model with the minimal k-fold RMSE is typically considered superior. This metric is derived by first averaging the MSEs over the k subsets to obtain the k-fold MSE and then extracting the square root of this mean value.
+The k-fold root mean squared error (RMSE) represents an estimate of a typical residual's magnitude and serves as a metric to evaluate and compare diverse models. A model with the lowest k-fold RMSE is typically considered superior. This metric is derived by first averaging the MSEs over all k subsets to obtain the k-fold MSE and then calculating the square root of this mean value.
 
 In this study, we set $k=5$.
 
@@ -109,13 +136,13 @@ To begin our analysis, we first examine the summary statistics and distributions
 
 In the summary statistics table, the dependent variable is the median home value (MEDHVAL), while the rest of the variables including the percentage of individuals with bachelor’s degrees or higher (PCTBACHMOR), median household income (MEDHHINC), percentage of vacant houses (PCTVACANT), percentage of single house units (PCTSINGLES), and households living in poverty (NBELPOV100) are all predictors of the dependent variable. The summary statistics table contains some key measurements, such as quantile 1, median, mean, quantile 3, maximum, and standard deviation.
 
-Quantiles order the values of the data from lowest to highest and divide the value of each variable into 4 equal parts. Quantile 1 represents the value below which 25% of the data falls, the median (Q2) represents the value below which 50% of the data falls, and the third quartile (Q3) represents the value below which 75% of the data falls. The maximum in the table can be interpreted as quantile 4 and measures the value below which 100% of the data falls.
+Quartiles order the values of the data from lowest to highest and divide the value of each variable into 4 equal parts. Quartile 1 represents the value below which 25% of the data falls, the median (Q2) represents the value below which 50% of the data falls, and the third quartile (Q3) represents the value below which 75% of the data falls. The maximum in the table can be interpreted as quantile 4 and measures the value below which 100% of the data falls.
 
-In the summary table, the dependent variable MEDHVAL has a quartile 1 of 35075, a median of 53250, a quartile 3 of 78625, and a maximum of 1e+06 (equal to 1,000,000). The interval between quantile 1 and the median is the smallest, indicating that the value of MEDHVAL is less variant. For PCTBACHMOR, the first quartile is 4.847, the median is 10, the mean is 16.08, the third quartile is 20.07, with a maximum value of 92.99. The standard deviation is 17.77. The first quartile for MEDHHINC is 21061, the median is 29719, the mean is 31542, the third quartile is 38750, with a maximum value of 2e+05 (200,000). The standard deviation is 16298.For PCTVACANT, the first quartile is 4.372, the median is 9.091, the mean is 11.29, the third quartile is 16.28, with a maximum value of 77.12. The standard deviation is 9.628.For PCTSINGLES, the first quartile is 2.11, the median is 5.714, the mean is 9.226, the third quartile is 11.06, with a maximum value of 100. The standard deviation is 13.25.And for NBELPOV100, the first quartile is 72, the median is 147, the mean is 189.8, the third quartile is 257, with a maximum value of 1267. The standard deviation is 164.3.
+In the summary table, the dependent variable MEDHVAL has a quartile 1 of 35,075, a median of 53,250, a quartile 3 of 78,625, and a maximum of 1e+06 (equal to 1,000,000). The interval between quantile 1 and the median is the smallest, indicating that the value of MEDHVAL is less variant. For PCTBACHMOR, the first quartile is 4.847, the median is 10, the mean is 16.08, the third quartile is 20.07, with a maximum value of 92.99. The standard deviation is 17.77. The first quartile for MEDHHINC is 21061, the median is 29,719, the mean is 31,542, the third quartile is 38,750, with a maximum value of 2e+05 (200,000). The standard deviation is 16,298. For PCTVACANT, the first quartile is 4.372, the median is 9.091, the mean is 11.29, the third quartile is 16.28, with a maximum value of 77.12. The standard deviation is 9.628. For PCTSINGLES, the first quartile is 2.11, the median is 5.714, the mean is 9.226, the third quartile is 11.06, with a maximum value of 100. The standard deviation is 13.25. For NBELPOV100, the first quartile is 72, the median is 147, the mean is 189.8, the third quartile is 257, with a maximum value of 1267. The standard deviation is 164.3.
 
-In addition to the four quantiles, the summary statistics table also provides the mean and standard deviation. The mean is the average of all values of a dataset and can be calculated by adding all values and dividing the result by the count. The standard deviation measures how dispersed the data of the dependent variable and the predictors are in relation to their means. A small standard deviation indicates that the data are clustered near the mean, while a large standard deviation indicates that the data are more spread out.
+In addition to the four quartiles, the summary statistics table also provides the mean and standard deviation. The mean is the average of all values of a dataset and is calculated by adding all values and dividing the result by the count. The standard deviation measures how dispersed the data of the dependent variable and the predictors are in relation to their means. A small standard deviation indicates that the data are clustered near the mean, while a large standard deviation indicates that the data are more spread out.
 
-In the summary statistics table, the mean of the dependent variable MEDHVAL is 66288, and its standard deviation is 60006, which is considerably large, indicating that the data of the dependent variable is spread out. The mean of PCTBACHMOR is 16.08, and its standard deviation is 17.77, indicating that this data is also very spread out. The mean and standard deviation for MEDHHINC are 31542 and 16298, respectively. The data is not as spread out as the previous two data but still spread. The mean and standard deviation of PCTVACANT are 11.29 and 9.628, respectively, making PCTVACANT a relatively spread-out dataset as well. PCTSINGLES has a mean of 9.226 and a standard deviation of 13.25, making this predictor the most spread-out data. NBELPOV100 has a mean of 189.8 and a standard deviation of 164.3, indicating a considerable spread of data.
+In the summary statistics table, the mean of the dependent variable MEDHVAL is 66,288, and its standard deviation is 60,006, which is considerably large, indicating that the distribution of the dependent variable experiences a great deal of variation, or "spread out". The mean of PCTBACHMOR is 16.08, and its standard deviation is 17.77, indicating that its distribution is also very spread out. The mean and standard deviation for MEDHHINC are 31,542 and 16,298, respectively. Its distribution is not as spread out as the previous two variables but still has high variation. The mean and standard deviation of PCTVACANT are 11.29 and 9.628, respectively, making PCTVACANT a relatively spread-out distribution as well. PCTSINGLES has a mean of 9.226 and a standard deviation of 13.25, making this predictor's distribution the most spread-out. NBELPOV100 has a mean of 189.8 and a standard deviation of 164.3, indicating considerable variation in its distribution.
 
 
 ```r
@@ -172,7 +199,7 @@ Table: Summary Statistics
 
 ## Variable distributions
 
-Looking at the variables plotted as histograms, we observe positive skews for median home value, individuals with bachelors degrees, vacant houses, single family houses, and households in poverty. Median home value, our dependent variable, is visibly skewed to the left, which makes sense as its mean is greater than its median. Individuals with bachelors degrees, vacant houses, single house units, and households living in poverty (independent variables) are also skewed to the left, and all of these except for households in poverty have a substantial spike of observations at 0. Of the independent variables, only median household income appears almost normally distributed. 
+Looking at the variables plotted as histograms, we observe positive skews for median home value, individuals with bachelors degrees, vacant houses, single family houses, and households in poverty. Median home value, our dependent variable, is visibly skewed right, which makes sense as its mean is greater than its median. Individuals with bachelors degrees, vacant houses, single house units, and households living in poverty (independent variables) are also skewed right, and all of these except for households in poverty have a substantial spike of observations at 0. Of the independent variables, only median household income appears to have a nearly normal distribution. 
 
 
 ```r
@@ -212,9 +239,9 @@ top = "Histogram of analysis variables")
 ![](Assignment1_files/figure-html/histograms-1.png)<!-- -->
 
 ## Log-transformed variable distributions
-To make the skewed variables more easily interpretable, and also to meet the assumption of normal distribution in multiple regression analysis, we log-transform all variables except for median household income (which is normally distributed). 
+To make the skewed variables more easily interpretable, and to meet the assumption of normality in multiple regression analysis, we log-transform all variables except for median household income (which is normally distributed). 
 
-After log-transformation, the dependent variable (Median Home Value) has a roughly normal distribution, so we will use LNMEDHVAL in our analysis. Of the independent variables, log-transformation only normalizes NBELPOV100 (Households living in poverty), so we will only use the log-transformed values for this variable and un-transformed values for the others.The regression we did in our assignment is all based on this log-transformed variable. The more explicit explanation of the regression assumptions will be examined in a separate section below in regression assumption checks.
+After log-transformation, the dependent variable (median home value) has a roughly normal distribution, so we will use LNMEDHVAL in our analysis. Of the independent variables, log-transformation only normalizes NBELPOV100 (Households living in poverty), so we will only use the log-transformed values for this variable and un-transformed values for the others.The regression we did in our assignment is all based on this log-transformed variable. The more explicit explanation of the regression assumptions will be examined in a separate section below in regression assumption checks.
 
 
 ```r
@@ -265,7 +292,7 @@ top = "Histogram of log-transformed independent variables")
 ## Correlation matrix 
 The correlation matrix generally supports the conclusions based on the visual comparison of the predictor maps, but provides a more quantitative visualization of the relationships between the predictors. 
 
-There is presence of severe multicollinearity in this correlation matrix. In this correlation matrix, high correlations between certain pairs of variables are observed. For example, the correlation coefficients between MEDHHINC and PCTBACHMOR is 0.7, as well as the correlation coefficients between PCTBACHMOR and LNMEDHVAL. This result could indicate the possibility of multicollinearity. Additionally, the high correlation coefficient between MEDHHINC and LNNBELPOV100 is 0.6 and the correlation coefficient between PCTVACANT and LNMEDHVAL is 0.5. These results of coefficients also hint at potential multicollinearity, suggesting that we should not include all of our independent variables in our final regression analysis. 
+There is presence of severe multicollinearity in this correlation matrix. In this correlation matrix, high correlations between certain pairs of variables are observed. For example, the correlation coefficient between MEDHHINC and PCTBACHMOR is 0.7, as well as the correlation coefficient between PCTBACHMOR and LNMEDHVAL. This result could indicate the possibility of multicollinearity. Additionally, the correlation coefficient between MEDHHINC and LNNBELPOV100 is 0.6 and the correlation coefficient between PCTVACANT and LNMEDHVAL is 0.5. These results of coefficients also hint at potential multicollinearity, suggesting that we should not include all of our independent variables in our final regression analysis. 
  
 
 ```r
@@ -287,15 +314,15 @@ ggcorrplot(round(cor(dat.corplot %>% na.omit()), 1),
 ## Chloropleth maps
 To examine the spatial distribution of our variables, we plot them as chloropleth maps. 
 
-Visually interpreting the choropleth maps, the median home value and households in poverty share similarities. From the map of median home value, the region to the north of downtown Philadelphia appears darker, indicating a lower median home value. Similarly, the map of households in poverty shows yellowish clustering in the same region, indicating a higher prevalence of households in poverty. This correlation is logical because households in poverty typically cannot afford homes with high values, leading them to reside in regions with lower home values. Consequently, it is reasonable to conclude that households in poverty are strong predictors for the dependent variable of median home value.
+Visually interpreting the choropleth maps, median home value and households in poverty share spatial similarities. From the map of median home value, a large region in North Philadelphia immediately north of Center City appears darker, indicating a lower median home value. Similarly, the map of households in poverty shows yellowish clustering in the same region, indicating a higher prevalence of households in poverty. This correlation is logical because households in poverty typically cannot afford homes with high values, leading them to reside in regions with lower home values. Consequently, it is reasonable to conclude that the percent of households in poverty is a strong predictor for the dependent variable of median home value.
 
-Additionally, median home value and percentage of individuals with a bachelor's degree or higher also exhibit similarities. Regions with lower median home value are predominantly occupied by individuals without a bachelor's degree or higher, especially in North Philadelphia. Conversely, the region near Mt. Airy (NW Phila.) displays a higher median home value and a greater percentage of individuals with a bachelor's degree or higher. This correlation aligns with the general expectation that individuals with greater educational attainment tend to have better financial statuses, in contrast to those without higher education degrees. Thus, it is also reasonable to conclude that the percentage of individuals with a bachelor's degree or higher is a strong predictor for the dependent variable of median home value.
+Additionally, median home value and percent of individuals with a bachelor's degree or higher also exhibit similarities. Regions with lower median home value are predominantly occupied by individuals without a bachelor's degree or higher, especially in North Philadelphia. Conversely, the region near Mt. Airy (NW Phila.) displays a higher median home value and a greater percentage of individuals with a bachelor's degree or higher. This correlation aligns with the general expectation that individuals with greater educational attainment tend to have better financial statuses, in contrast to those without higher education degrees. Thus, it is also reasonable to conclude that the percentage of individuals with a bachelor's degree or higher is a strong predictor for the dependent variable of median home value.
 
 Moreover, the percentage of single-home units shares similarities with median home value, but there exists some variation. The higher percentage of single-home units in Mt. Airy and the northeastern region correlates with a higher median home value. However, the low percentage of single-home units downtown also suggests a high median home value. Consequently, the percentage of single-home units is not as strong a predictor for median home value as households in poverty and the percentage of individuals with a bachelor's degree or higher.
 
 The percentage of vacant homes also shows a strong correlation with median home value. A low percentage of vacant homes is observed in areas with high median home values, while a high percentage of vacant homes is found in regions with lower median home values. Hence, the percentage of vacant homes serves as another strong predictor for median home value.
 
-Given the high inter-correlation observed between the dependent variable, median home value, and predictors such as households in poverty, the percentage of individuals with a bachelor's degree or higher, and the percentage of vacant homes, concerns may arise regarding multicollinearity. These variables might display high correlations, posing challenges in differentiating the individual effects of each predictor on the dependent variable.
+Given the high correlations between the dependent variable, median home value, and predictors such as households in poverty, the percentage of individuals with a bachelor's degree or higher, and the percentage of vacant homes, concerns may arise regarding multicollinearity. These variables might pose challenges in isolating the individual effects of each predictor on the dependent variable.
 
 
 ```r
@@ -343,22 +370,23 @@ ggplot(dat.sf) +
 ## Regression results 
 
 The regression consists of:
+
 - the natural logarithm of median home value (LNMEDHVAL) regressed on percent of vacant house (PCTVACANT)
 - percent of single home units (PCTSINGLES)
 - percent of individuals with bachelor degree or higher (PCTBACHMOR)
 - households living in poverty (LNNBELPOV100) with natural log transformation
 
-The logarithm transformed regression model has a multiple $R^2$ of 0.6623 and adjusted $R^2$ of 0.6615 which means that approximately 66.23% of the log-transformed values of median home value can be explained by the predictors in the model. This $R^2$ indicates a moderately strong relationship between median home value and the model predictors.
+The log-transformed regression model has a multiple $R^2$ of 0.6623 and adjusted $R^2$ of 0.6615, which means that approximately 66.23% of the log-transformed values of median home value can be explained by the predictors in the model. This $R^2$ indicates a moderately strong relationship between median home value and the model predictors.
 
 ### Vacancy rate and households in poverty
 PCTVACANT and LNNBELPOV100 are negatively associated with median home value, indicating that increases in vacancy and poverty rate are associated with decreases in home prices.
 
-The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of log-transformed median home value. Similarly, a 1-unit increase in the log-transformed share of households in poverty (LNNBELPOV100) is associated with a decrease of 0.0789054 in the median home value. In practical terms, a 1% increase in PCTVACANT and LNNBELPOV100 respectively lead to a $191.57 and $789.05 decrease in median home value.
+The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of log-transformed median home value. Similarly, a 1-unit increase in the log-transformed share of households in poverty (LNNBELPOV100) is associated with a decrease of 0.0789054 in the median home value. In practical terms, a 1% increase in PCTVACANT and LNNBELPOV100 respectively lead to a \$191.57 and \$789.05 decrease in median home value.
 
 ### Single homes and bachelors degrees
 PCTSINGLES and PCTBACHMOR are positively associated with median home value, meaning that increases in educational attainment and single homes are associated with increases in home prices. 
 
-PCTSINGLES and PCTBACHMOR have the estimates of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home units and the percentage of individuals with a bachelor's degree is individually associated with an increase of 0.0029769 and 0.209098 in log-transformed median home value. In other words, a 1% increase in PCTSINGLES and PCTBACHMOR respectively leads to a $29.77 and $209.10 increase in median home value.
+PCTSINGLES and PCTBACHMOR have the estimates of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home units and the percentage of individuals with a bachelor's degree is individually associated with an increase of 0.0029769 and 0.209098 in log-transformed median home value. In other words, a 1% increase in PCTSINGLES and PCTBACHMOR respectively leads to a \$29.77 and \$209.10 increase in median home value.
 
 ### Accuracy
 The standard error measures the variability and precision of the estimate, with lower values indicating higher precision. The t value measures the strength of the relationship between the predictor and the dependent variable. Higher absolute t values indicate a stronger relationship. In this regression, PCTBACHMOR has the highest absolute t value of 38.494 indicating its strongest relationship with median home value, and PCTSINGLES has the lowest absolute t value of 4.234, meaning it has the weakest relationship with median home value.
@@ -484,7 +512,7 @@ ggplot(dat.log, aes(standard_residuals)) +
 
 ## Scatterplot of standardized residuals
 
-The following scatterplot shows standardized residuals as a function of predicted LNMEDHVAL values. The distribution of residuals appears to demonstrate heteroscedasticity, as the variation in residuals is not uniform across predicted values. There are also a number of outlier values, which tend to be more positive towards lower predicted values and more negative towards higher predicted values.
+The following scatterplot shows standardized residuals as a function of predicted LNMEDHVAL values. The distribution of residuals appears to show heteroscedasticity, as the variation in residuals is not uniform across predicted values. There are also a number of outlier values, which tend to be more positive towards lower predicted values and more negative towards higher predicted values.
 
 
 ```r
@@ -503,7 +531,7 @@ ggplot(dat.log, aes(pred_values, standard_residuals)) +
 
 ![](Assignment1_files/figure-html/scatter_standard_resid-1.png)<!-- -->
 
-Based on the previous maps of LNMEDHVAL and predictor variables across Philadelphia, there seems to be a great deal of spatial autocorrelation in our data. All variables show geospatial clustering to some extent, suggesting that block groups are not independent of each other with respect to these variable values and are likely spatially related.
+Based on the previous maps of LNMEDHVAL and predictor variables across Philadelphia, there seems to be a great deal of spatial autocorrelation in our data. All variables show geospatial clustering to some extent, suggesting that block groups are not independent of each other with respect to these variable values and are likely spatially autocorrelated.
 
 
 ## Chloropleth map of residuals
@@ -632,23 +660,24 @@ rmse2
 # Discussion and Limitations   
 ## **Analysis Overview**:
 
-Using ordinary least squares regression, we sought to predict the median home value based on census demographic variables at the block group level: 
+Using ordinary least squares regression, we sought to predict the median home value based on census demographic variables at the block group level:
+
 - Percentage of residents possessing at least a **bachelor's degree**.
 - **Home vacancy rate**.
 - Percentage of detached **single-family homes**.
 - Proportion of **households living in poverty**.
 - **Median household income**.
 
-Our methodology involved an exploratory data analysis followed by a multiple regression analysis in adherence to the standard regression assumptions of linearity in our indicators, no multicolinearity, and homoscedasticity. We tested our model's validity through stepwise regression and k-folds cross-validation, applying the latter to a constrained model variant.
+Our methodology involved an exploratory data analysis followed by a multiple regression analysis in adherence to the standard regression assumptions of linearity in our indicators, no multicollinearity, and homoscedasticity. We tested our model's validity through stepwise regression and k-folds cross-validation, applying the latter to a constrained model variant.
 
 Our final model yielded an adjusted \( R^2 \) of 0.66. This suggests that our selected predictors account for 66% of the variance in median home values at the census block group level in Philadelphia.
 
 ## **Key Findings**:
 
 1. **Educational attainment**: A notable finding was the strong influence of education levels on home values. This aligns with the dominance of _"meds and eds"_ in Philadelphia's local economy.
-2. **Vacancy Rates**: Despite high vacancy rates typical of post-industrial cities, our data suggests that home values aren't meaningfully impacted by vacancy, possibly due to its pervasive nature.
-3. **Single-Family Homes**: The prevalence of detached single-family homes didn't notably impact home values. This could be linked to gentrification processes where the composition of the immediate neighborhood becomes secondary.
-4. **Income and Poverty Dynamics**: The potent predictive value of median household income and poverty rates in a racially and socioeconomically stratified city was anticipated. These metrics mirror the broader living environment, providing insights into the relationship between socio-demographic elements and housing values in urban locales.
+2. **Vacancy Rates**: Despite high vacancy rates typical of post-industrial cities, our data suggests that home values aren't meaningfully impacted by vacancy, possibly due to its pervasive nature across much of Philadelphia.
+3. **Single-Family Homes**: The prevalence of detached single-family homes did not notably impact home values. This could be linked to gentrification processes where the compositions of immediate neighborhoods become secondary.
+4. **Income and Poverty Dynamics**: The potent predictive value of median household income and poverty rates in a racially and socioeconomically stratified city was anticipated. These metrics mirror the broader lived environment, providing insights into the relationship between socio-demographic elements and housing values in urban areas.
 
 ## **Limitations**:
 
@@ -670,8 +699,8 @@ Our regression results highlight that all four predictors significantly influenc
 
 ## **Assumptions Violations**:
 
-Visual inspections of scatter plots indicate breaches of the linearity and homoscedasticity assumptions. The histogram of standardized residuals hints at a mild left-skew. The presence of multicolinearity, as revealed in the correlation matrix, poses threats to model accuracy. Using raw counts of households in poverty could distort its impact on home values, failing to account for variation in population size across block groups.
+Visual inspections of scatter plots indicate breaches of the linearity and homoscedasticity assumptions. The histogram of standardized residuals shows a mild left skew. The presence of multicollinearity, as revealed in the correlation matrix, poses threats to model accuracy. Using raw counts of households in poverty could distort its impact on home values, failing to account for variation in population size across block groups.
 
 ## **Ridge or LASSO Regression**:
 
-Considering the multicolinearity issue, Ridge and LASSO regression could be effective Both methods introduce a shrinkage penalty on coefficient estimates, ensuring more stable coefficients and enhancing the model's ease of interpretation.
+Considering the multicollinearity issue, Ridge and LASSO regression could be effective. Both methods introduce a shrinkage penalty on coefficient estimates, ensuring more stable coefficients and enhancing the model's ease of interpretation.

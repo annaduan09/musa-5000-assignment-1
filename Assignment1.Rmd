@@ -119,7 +119,8 @@ Prior to comprehensive regression analysis, we conduct a preliminary exploration
 Correlation serves as a quantitative gauge of the mutual relationship between two variables. The sample correlation coefficient, denoted by *r*, is bounded within -1 and 1. An *r* value of -1 indicates a perfect negative correlation, whereas an *r* value of 1 indicates a perfect positive correlation. A positive value denotes a direct proportional relationship between the variables, and conversely, a negative value denotes an inverse relationship. A correlation coefficient of 0 shows the lack of any discernible linear relationship between the paired variables. The mathematical formula for the sample correlation coefficient *r* is as follows:
 
 $$r = \frac{n(\Sigma xy)-(\Sigma x)(\Sigma y)}{\sqrt{[n\Sigma x^{2}-(\Sigma x)^{2}][n\Sigma y^{2}-(\Sigma y)^{2}]}}$$
-Where:  
+Where:
+
 - **\( n \)** is the number of paired data points.  
 - **\( \Sigma xy \)** is the sum of the products of the paired observations of x and y.  
 - **\( \Sigma x \)** and **\( \Sigma y \)** are the sums of the x scores and y scores, respectively.  
@@ -130,16 +131,17 @@ Where:
 
 In our analytic framework, we employ multiple regression to investigate the relationship between our dependent variable, median home value, and various explanatory variables. Through this approach, we not only ascertain the magnitude and direction of the relationship between each predictor and the median home value, but also assess the overall fit of the model to our dataset. Crucially, this methodology permits us to examine individual predictors in isolation and explore how median home value may change in association with a unitary change in a given predictor.
 
-In the following formula, median household value is a function of the following predictors:  
+In the following formula, median household value is a function of the following predictors:
+
 * **PCTBACHMOR**: Percent of residents with a bachelor's degree or more.  
 * **NBELPOV**: Number of households living in poverty.  
 * **PCTVACANT**: Percent of vacant homes.  
 * **PCTSINGLES**: Percent of homes that are single family homes.  
 
 The multiple regression model is:  
-\[ \text{Median Home Value}_i = \beta_0 + \beta_1(\text{PCTBACHMOR}_i) + \beta_2(\text{NBELPOV}_i) + \beta_3(\text{PCTVACANT}_i) + \beta_4(\text{PCTSINGLES}_i) + \epsilon_i \]
+$$ \text{Median Home Value}_i = \beta_0 + \beta_1(\text{PCTBACHMOR}_i) + \beta_2(\text{NBELPOV}_i) + \beta_3(\text{PCTVACANT}_i) + \beta_4(\text{PCTSINGLES}_i) + \epsilon_i $$
 
-Where \( \epsilon_i \) represents the error term for the \( i^{th} \) observation.
+Where $\beta_i$ represents the coefficient of an independent variable, or the direction and amount by which the dependent variable changes when the predictor increases by one unit. \( \epsilon_i \) represents the error term for the \( i^{th} \) observation.
 
 This method relies on the following assumptions:
 
@@ -149,12 +151,36 @@ This method relies on the following assumptions:
 * y is continuous and normally distributed
 * predictors are not co-linear (highly-correlated)
 
-Assuming all these conditions are met, we need to calculate the following parameters:  
-- $\beta _{0}$  
-- $\beta _{k}$  
-- $\sigma ^{2}$  
+Assuming all these conditions are met, we need to calculate the following parameters:
 
-[[need to complete this section!!]]
+- $\beta _{0}$, the y-intercept;
+- $\beta _{i}$, representing the coefficients of the independent variables ($\beta_{0}, \beta_{1}, ..., \beta_{k}$);
+- $\sigma ^{2}$, which is the variance or MSE.
+
+The values of $\beta _{0}$ $\beta _{i}$ are chosen simultaneously to minimize the expression for the Error Sum of Squares (SSE), which is calculated in the following equations:
+$$SSE=\sum_{i=1}^{n}\epsilon^{2}=\sum_{i=1}^{n}(y-\hat{y})^{2}=\sum_{i=1}^{n}(y_{i}-\hat{\beta_{0}}-\hat{\beta_{1}}x_{1i}-\hat{\beta_{2}}x_{2i}-\dots-\hat{\beta_{k}}x_{ki})^{2}$$
+
+The variance $\sigma^2$ determines the amount of variability inherent in the regression model, or the Mean Squared Error (MSE). It is estimated using the following formula:
+$$\sigma^2 = s^2 = \frac{SSE}{n-(k+1)} = MSE$$
+Where $n$ is the number of observations, and $k$ is the number of predictors.
+
+$R^2$ is the coefficient of multiple determination, or the proportion of variance in the model explained by all k predictors. It is calculated using the following formula:
+$$R^2=1-\frac{SSE}{\Sigma(y_{i}-\overline{y}_{i})^2}$$
+Where $\Sigma(y_{i}-\overline{y}_{i})^2$ is equal to the sum of squared deviations about the sample mean of the observed y values, or the total sum of squares ($SST$).
+
+Because adding more predictors will generally increase $R^2$, it is typically adjusted for the number of predictors using the following formula:
+$$R^2_{adj} = \frac{(n-1)R^{2}-k}{n-(k+1)}$$
+Where, again, $n$ is the number of observations, and $k$ is the number of predictors.
+
+For hypothesis testing, we employ the f-test, which tests the null hypothesis that all coefficients in the model are (jointly) equal to zero vs. the alternative hypothesis that at least 1 of the coefficients is not 0. The hypotheses are formally defined below:
+
+$H_{0}:\beta_{1}=\beta_{2}=\dots=\beta_{k}=0$ 
+
+$H_{a}:\beta_{1}\neq0$ or $\beta_{2}\neq0$ or $\dots$ or $\beta_{k}\neq0$
+
+We also test the following hypotheses for each predictor $i$:
+
+$H_{0i}:\beta_{i}=0, H_{ai}:\beta_{i}\neq0$
 
 ## Additional Analyses
 ### Stepwise regression
@@ -390,6 +416,7 @@ ggplot(dat.sf) +
 ## Regression results 
 
 The regression consists of:
+
 - the natural logarithm of median home value (LNMEDHVAL) regressed on percent of vacant house (PCTVACANT)
 - percent of single home units (PCTSINGLES)
 - percent of individuals with bachelor degree or higher (PCTBACHMOR)
