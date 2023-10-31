@@ -6,7 +6,7 @@ output:
   html_document:
     keep_md: yes
     toc: yes
-    theme: cerulean
+    theme: flatly
     toc_float: yes
     code_folding: hide
     number_sections: no
@@ -96,9 +96,9 @@ In their comprehensive research on predictive methodologies for housing values, 
 
 Not only do these indicators offer a foundational perspective on the socioeconomic climate of a neighborhood, but they also historically serve as robust predictors of housing prices. Urban planning theories often posit that neighborhoods with elevated levels of education and income typically display higher home values, given residents' greater purchasing power. However, the reverse causality, wherein the influx of affluent and educated residents propels higher property values, cannot be ignored.
 
-Our regression analysis found that the aforementioned variables explain approximately 66% of the variance in log-transformed median home values within Philadelphia. Notably, educational attainment (PCTBACHMOR) emerges as the strongest predictor. Yet, a critical observation lies in the spatial heteroscedasticity, signifying high clustering in errors. This hints at our model's lower predictive power in certain local contexts.
+Our regression analysis found that the aforementioned variables explain approximately 66% of the variance in log-transformed median home values within Philadelphia. Notably, educational attainment (PCTBACHMOR) emerges as the strongest predictor. A 1% increase in PCTVACANT and LNNBELPOV100 respectively lead to a \$191.57 and \$789.05 decrease in median home value, while a 1% increase in PCTSINGLES and PCTBACHMOR respectively leads to a \$29.77 and \$209.10 increase in median home value. 
 
-Considering these insights, it behooves urban planners and researchers to delve deeper -- a holistic, city-wide model necessitates further exploration to capture the intricate dynamics influencing housing values across Philadelphia's diverse neighborhoods.
+A critical observation lies in the spatial heteroscedasticity, signifying high clustering in errors. This hints at our model's lower predictive power in certain local contexts. Considering these limitations, further research and construction of a holistic, city-wide model is needed to capture the intricate dynamics influencing housing values across Philadelphia's diverse neighborhoods.
 
 # Methods  
 ## Data cleaning
@@ -129,7 +129,7 @@ Where:
 
 ## Multiple regression analysis
 
-In our analytic framework, we employ multiple regression to investigate the relationship between our dependent variable, median home value, and various explanatory variables. Through this approach, we not only ascertain the magnitude and direction of the relationship between each predictor and the median home value, but also assess the overall fit of the model to our dataset. Crucially, this methodology permits us to examine individual predictors in isolation and explore how median home value may change in association with a unitary change in a given predictor.
+In our analytic framework, we use multiple regression to investigate the relationship between our dependent variable, median home value, and various explanatory variables. Through this approach, we not only ascertain the magnitude and direction of the relationship between each predictor and the median home value, but also assess the overall fit of the model to our data. Crucially, this methodology permits us to examine individual predictors in isolation and explore how median home value may change in association with a unitary change in a given predictor.
 
 In the following formula, median household value is a function of the following predictors:
 
@@ -218,7 +218,7 @@ In the summary table, the dependent variable MEDHVAL has a quartile 1 of 35,075,
 
 In addition to the four quartiles, the summary statistics table also provides the mean and standard deviation. The mean is the average of all values of a dataset and is calculated by adding all values and dividing the result by the count. The standard deviation measures how dispersed the data of the dependent variable and the predictors are in relation to their means. A small standard deviation indicates that the data are clustered near the mean, while a large standard deviation indicates that the data are more spread out.
 
-In the summary statistics table, the mean of the dependent variable MEDHVAL is 66,288, and its standard deviation is 60,006, which is considerably large, indicating that the distribution of the dependent variable experiences a great deal of variation, or "spread out". The mean of PCTBACHMOR is 16.08, and its standard deviation is 17.77, indicating that its distribution is also very spread out. The mean and standard deviation for MEDHHINC are 31,542 and 16,298, respectively. Its distribution is not as spread out as the previous two variables but still has high variation. The mean and standard deviation of PCTVACANT are 11.29 and 9.628, respectively, making PCTVACANT a relatively spread-out distribution as well. PCTSINGLES has a mean of 9.226 and a standard deviation of 13.25, making this predictor's distribution the most spread-out. NBELPOV100 has a mean of 189.8 and a standard deviation of 164.3, indicating considerable variation in its distribution.
+In the summary statistics table, the mean of the dependent variable MEDHVAL is $66,288, and its standard deviation is 60,006, which is considerably large, indicating that the distribution of the dependent variable experiences a great deal of variation, or "spread out". The mean of PCTBACHMOR is 16.08, and its standard deviation is 17.77, indicating that its distribution is also very spread out. The mean and standard deviation for MEDHHINC are 31,542 and 16,298, respectively. Its distribution is not as spread out as the previous two variables but still has high variation. The mean and standard deviation of PCTVACANT are 11.29 and 9.628, respectively, making PCTVACANT a relatively spread-out distribution as well. PCTSINGLES has a mean of 9.226 and a standard deviation of 13.25, making this predictor's distribution the most spread-out. NBELPOV100 has a mean of 189.8 and a standard deviation of 164.3, indicating considerable variation in its distribution.
 
 ```{r summary statistics, message=FALSE, warning=FALSE, cache=TRUE, include=TRUE}
 sum_stat <- function(var) {
