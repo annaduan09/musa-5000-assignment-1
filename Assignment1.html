@@ -11,7 +11,7 @@
 
 <meta name="author" content="Anna Duan, Jingyi Li, and Jamie Song" />
 
-<meta name="date" content="2023-10-31" />
+<meta name="date" content="2023-11-05" />
 
 <title>MUSA5000 Assignment 1</title>
 
@@ -1587,7 +1587,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">MUSA5000 Assignment 1</h1>
 <h4 class="author">Anna Duan, Jingyi Li, and Jamie Song</h4>
-<h4 class="date">2023-10-31</h4>
+<h4 class="date">2023-11-05</h4>
 
 </div>
 
@@ -1731,15 +1731,17 @@ poverty.<br />
 homes.</li>
 </ul>
 <p>The multiple regression model is:<br />
-<span class="math display">\[ \text{Median Home Value}_i = \beta_0 +
-\beta_1(\text{PCTBACHMOR}_i) + \beta_2(\text{NBELPOV}_i) +
+<span class="math display">\[ \text{LNMEDHVAL}_i = \beta_0 +
+\beta_1(\text{PCTBACHMOR}_i) + \beta_2(\text{LNNBELPOV100}_i) +
 \beta_3(\text{PCTVACANT}_i) + \beta_4(\text{PCTSINGLES}_i) + \epsilon_i
 \]</span></p>
-<p>Where <span class="math inline">\(\beta_i\)</span> represents the
-coefficient of an independent variable, or the direction and amount by
-which the dependent variable changes when the predictor increases by one
-unit. <span class="math inline">\(\epsilon_i\)</span> represents the
-error term for the <span class="math inline">\(i^{th}\)</span>
+<p>Where <span class="math inline">\(\beta_0\)</span> represents the
+value of the log-transformed median home value when all of the
+predictors equal 0. The beta coefficient preceding each independent
+variable denotes the direction and amount by which log-transformed
+median home value changes when the predictor increases by one unit.
+<span class="math inline">\(\epsilon_i\)</span> represents the error
+term for the <span class="math inline">\(i^{th}\)</span>
 observation.</p>
 <p>This method relies on the following assumptions:</p>
 <ul>
@@ -1762,8 +1764,11 @@ coefficients of the independent variables (<span class="math inline">\(\beta_{0}
 variance or MSE.</li>
 </ul>
 <p>The values of <span class="math inline">\(\beta _{0}\)</span> <span class="math inline">\(\beta _{i}\)</span> are chosen simultaneously to
-minimize the expression for the Error Sum of Squares (SSE), which is
-calculated in the following equations: <span class="math display">\[SSE=\sum_{i=1}^{n}\epsilon^{2}=\sum_{i=1}^{n}(y-\hat{y})^{2}=\sum_{i=1}^{n}(y_{i}-\hat{\beta_{0}}-\hat{\beta_{1}}x_{1i}-\hat{\beta_{2}}x_{2i}-\dots-\hat{\beta_{k}}x_{ki})^{2}\]</span></p>
+minimize the expression for the Error Sum of Squares (SSE), which is the
+squared distance between <span class="math inline">\(\beta_{k}\)</span>
+and the regression line, or the residual. Their values are calculated as
+follows, and we receive least squares values of the beta coefficients
+when the SSE is minimized. <span class="math display">\[SSE=\sum_{i=1}^{n}\epsilon^{2}=\sum_{i=1}^{n}(y-\hat{y})^{2}=\sum_{i=1}^{n}(y_{i}-\hat{\beta_{0}}-\hat{\beta_{1}}x_{1i}-\hat{\beta_{2}}x_{2i}-\dots-\hat{\beta_{k}}x_{ki})^{2}\]</span></p>
 <p>The variance <span class="math inline">\(\sigma^2\)</span> determines
 the amount of variability inherent in the regression model, or the Mean
 Squared Error (MSE). It is estimated using the following formula: <span class="math display">\[\sigma^2 = s^2 = \frac{SSE}{n-(k+1)} =
@@ -1806,7 +1811,7 @@ model, overlooking the possibility of several models that could be
 equally valid. An additional limitation is its indifference to
 underlying theoretical considerations regarding predictors, potentially
 omitting vital variables during the optimization phase. For the purposes
-of this study, we only use stepwise regression primarily as a means to
+of this study, we use stepwise regression primarily as a means to
 validate our model.</p>
 </div>
 <div id="k-fold-cross-validation" class="section level3">
@@ -2127,9 +2132,10 @@ correlation coefficient between PCTBACHMOR and LNMEDHVAL. This result
 could indicate the possibility of multicollinearity. Additionally, the
 correlation coefficient between MEDHHINC and LNNBELPOV100 is 0.6 and the
 correlation coefficient between PCTVACANT and LNMEDHVAL is 0.5. These
-results of coefficients also hint at potential multicollinearity,
-suggesting that we should not include all of our independent variables
-in our final regression analysis.</p>
+results of coefficients verify our suspicion of potential
+multicollinearity based on our maps, suggesting that we should not
+include all of our independent variables in our final regression
+analysis.</p>
 <pre class="r"><code>dat.corplot &lt;- dat.log %&gt;%
   dplyr::select(-POLY_ID, -AREAKEY, -MEDHVAL, -LNPCTBACHMOR, -LNMEDHHINC, -LNPCTVACANT, -LNPCTSINGLES, -NBELPOV100)
 
@@ -2233,33 +2239,28 @@ ggplot(dat.sf) +
 <h1>Multiple Regression Analysis</h1>
 <div id="regression-results" class="section level2">
 <h2>Regression results</h2>
-<p>The regression consists of:</p>
-<ul>
-<li>the natural logarithm of median home value (LNMEDHVAL) regressed on
-percent of vacant house (PCTVACANT)</li>
-<li>percent of single home units (PCTSINGLES)</li>
-<li>percent of individuals with bachelor degree or higher
-(PCTBACHMOR)</li>
-<li>households living in poverty (LNNBELPOV100) with natural log
-transformation</li>
-</ul>
-<p>The log-transformed regression model has a multiple <span class="math inline">\(R^2\)</span> of 0.6623 and adjusted <span class="math inline">\(R^2\)</span> of 0.6615, which means that
-approximately 66.23% of the log-transformed values of median home value
-can be explained by the predictors in the model. This <span class="math inline">\(R^2\)</span> indicates a moderately strong
-relationship between median home value and the model predictors.</p>
+<p>The regression consists of the natural logarithm of median home value
+(LNMEDHVAL) regressed on: - percent of vacant homes (PCTVACANT)<br />
+- percent of single home units (PCTSINGLES)<br />
+- percent of individuals with bachelor degree or higher
+(PCTBACHMOR)<br />
+- households living in poverty (LNNBELPOV100) with natural log
+transformation</p>
 <div id="vacancy-rate-and-households-in-poverty" class="section level3">
 <h3>Vacancy rate and households in poverty</h3>
 <p>PCTVACANT and LNNBELPOV100 are negatively associated with median home
 value, indicating that increases in vacancy and poverty rate are
 associated with decreases in home prices.</p>
 <p>The estimate of PCTVACANT is -0.0191569, which demonstrates that a
-1-unit increase in the percentage of vacant homes is associated with a
-decrease of 0.0191569 in the response variable of log-transformed median
-home value. Similarly, a 1-unit increase in the log-transformed share of
-households in poverty (LNNBELPOV100) is associated with a decrease of
-0.0789054 in the median home value. In practical terms, a 1% increase in
-PCTVACANT and LNNBELPOV100 respectively lead to a $191.57 and $789.05
-decrease in median home value.</p>
+1-unit increase (i.e., percentage point) in the percentage of vacant
+homes is associated with a decrease of <span class="math inline">\(\beta
+_{3}\)</span> = 0.0191569 in the response variable of log-transformed
+median home value. Similarly, a 1-unit increase (i.e., percentage point)
+in the log-transformed share of households in poverty (LNNBELPOV100) is
+associated with a decrease of <span class="math inline">\(\beta
+_{2}\)</span> = 0.0789054 in the median home value. In practical terms,
+a 1% increase in PCTVACANT and LNNBELPOV100 respectively lead to a <span class="math inline">\(\beta _{3}\)</span> = $191.57 and <span class="math inline">\(\beta _{2}\)</span> = $789.05 decrease in median
+home value.</p>
 </div>
 <div id="single-homes-and-bachelors-degrees" class="section level3">
 <h3>Single homes and bachelors degrees</h3>
@@ -2267,12 +2268,28 @@ decrease in median home value.</p>
 value, meaning that increases in educational attainment and single homes
 are associated with increases in home prices.</p>
 <p>PCTSINGLES and PCTBACHMOR have the estimates of 0.0029769 and
-0.209098 respectively, which implies that a 1-unit increase in the
-percentage of single home units and the percentage of individuals with a
-bachelor’s degree is individually associated with an increase of
-0.0029769 and 0.209098 in log-transformed median home value. In other
+0.209098 respectively, which implies that a 1-unit increase(i.e.,
+percentage point) in the percentage of single home units and the
+percentage of individuals with a bachelor’s degree is individually
+associated with an increase of <span class="math inline">\(\beta
+_{4}\)</span> = 0.0029769 and <span class="math inline">\(\beta
+_{1}\)</span> = 0.209098 in log-transformed median home value. In other
 words, a 1% increase in PCTSINGLES and PCTBACHMOR respectively leads to
-a $29.77 and $209.10 increase in median home value.</p>
+a <span class="math inline">\(\beta _{4}\)</span> = $29.77 and <span class="math inline">\(\beta _{1}\)</span> = $209.10 increase in median
+home value.</p>
+<p>The log-transformed regression model has a multiple <span class="math inline">\(R^2\)</span> of 0.6623 and adjusted <span class="math inline">\(R^2\)</span> of 0.6615, which means that
+approximately 66.23% of the log-transformed values of median home value
+can be explained by the predictors in the model. This <span class="math inline">\(R^2\)</span> indicates a moderately strong
+relationship between median home value and the model predictors. All of
+our four independent variables are also statistically significant, with
+p-values well below 0.001. This tells us that for all of our independent
+variables, the odds of them being equal to their respective beta
+coefficient estimates in the case that the null hypothesis <span class="math inline">\(\H _{0}\)</span> is true is less than 0.001. Given
+these low probabilities, we can reject the null hypothesis <span class="math inline">\(\H _{0}\)</span> that all of our beta coefficients
+are equal to zero in favor of the alternative hypothesis <span class="math inline">\(\H _{a}\)</span> that at least one of our beta
+coefficients is not equal to zero. The low p-value associated with the
+F-statistic tells us that we can reject the null hypothesis <span class="math inline">\(\H _{0}\)</span> that all of our beta coefficients
+are equal to zero.</p>
 </div>
 <div id="accuracy" class="section level3">
 <h3>Accuracy</h3>
@@ -2391,7 +2408,8 @@ residual value divided by the standard deviation of all residuals,
 producing a standardized value that represents a given residual’s
 distance from the line of best fit. Based on the shape of this
 distribution, we can estimate that residuals have a slight skew to the
-left, indicating that the median is greater than the mean.</p>
+left and is not normal, indicating that the median is greater than the
+mean.</p>
 <pre class="r"><code>ggplot(dat.log, aes(standard_residuals)) +
   geom_histogram(binwidth = 0.5, fill = &quot;navy&quot;) +
   plotTheme() + 
@@ -2425,10 +2443,10 @@ ggplot(dat.log, aes(pred_values, standard_residuals)) +
 <p><img src="data:image/png;base64,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" /><!-- --></p>
 <p>Based on the previous maps of LNMEDHVAL and predictor variables
 across Philadelphia, there seems to be a great deal of spatial
-autocorrelation in our data. All variables show geospatial clustering to
+autocorrelation in our data. All variables show spatial clustering to
 some extent, suggesting that block groups are not independent of each
 other with respect to these variable values and are likely spatially
-autocorrelated.</p>
+auto-correlated.</p>
 </div>
 <div id="chloropleth-map-of-residuals" class="section level2">
 <h2>Chloropleth map of residuals</h2>
@@ -2542,7 +2560,12 @@ regression and k-folds cross-validation, applying the latter to a
 constrained model variant.</p>
 <p>Our final model yielded an adjusted <span class="math inline">\(R^2\)</span> of 0.66. This suggests that our
 selected predictors account for 66% of the variance in median home
-values at the census block group level in Philadelphia.</p>
+values at the census block group level in Philadelphia. All p-values
+associated with our beta coefficient estimates were less than 0.001,
+allowing us to reject the null hypothesis that all of our beta
+coefficients equal zero. This is not surprising, as all of the
+predictors are commonly known to be associated with home prices and are
+commonly discussed in academia and real estate.</p>
 </div>
 <div id="key-findings" class="section level2">
 <h2><strong>Key Findings</strong>:</h2>
@@ -2586,6 +2609,11 @@ demographics.</li>
 <li><strong>Unexplained Variance</strong>: The model doesn’t account for
 approximately 33% of the variance in home values in Philadelphia block
 groups.</li>
+<li><strong>Variable selection</strong>: The model is also limited by
+our variable selection, specifically because we use the raw count of
+households living in poverty rather than the percentage. As a result,
+this variable may have an outsized effect in block groups with more
+households, since it’s not normalized by population.</li>
 </ul>
 </div>
 <div id="recommendations" class="section level2">

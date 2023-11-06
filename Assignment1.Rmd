@@ -139,9 +139,9 @@ In the following formula, median household value is a function of the following 
 * **PCTSINGLES**: Percent of homes that are single family homes.  
 
 The multiple regression model is:  
-$$ \text{Median Home Value}_i = \beta_0 + \beta_1(\text{PCTBACHMOR}_i) + \beta_2(\text{NBELPOV}_i) + \beta_3(\text{PCTVACANT}_i) + \beta_4(\text{PCTSINGLES}_i) + \epsilon_i $$
+$$ \text{LNMEDHVAL}_i = \beta_0 + \beta_1(\text{PCTBACHMOR}_i) + \beta_2(\text{LNNBELPOV100}_i) + \beta_3(\text{PCTVACANT}_i) + \beta_4(\text{PCTSINGLES}_i) + \epsilon_i $$
 
-Where $\beta_i$ represents the coefficient of an independent variable, or the direction and amount by which the dependent variable changes when the predictor increases by one unit. \( \epsilon_i \) represents the error term for the \( i^{th} \) observation.
+Where $\beta_0$ represents the value of the log-transformed median home value when all of the predictors equal 0. The beta coefficient preceding each independent variable denotes the direction and amount by which log-transformed median home value changes when the predictor increases by one unit. \( \epsilon_i \) represents the error term for the \( i^{th} \) observation.
 
 This method relies on the following assumptions:
 
@@ -157,7 +157,7 @@ Assuming all these conditions are met, we need to calculate the following parame
 - $\beta _{i}$, representing the coefficients of the independent variables ($\beta_{0}, \beta_{1}, ..., \beta_{k}$);
 - $\sigma ^{2}$, which is the variance or MSE.
 
-The values of $\beta _{0}$ $\beta _{i}$ are chosen simultaneously to minimize the expression for the Error Sum of Squares (SSE), which is calculated in the following equations:
+The values of $\beta _{0}$ $\beta _{i}$ are chosen simultaneously to minimize the expression for the Error Sum of Squares (SSE), which is the squared distance between $\beta_{k}$ and the regression line, or the residual. Their values are calculated as follows, and we receive least squares values of the beta coefficients when the SSE is minimized. 
 $$SSE=\sum_{i=1}^{n}\epsilon^{2}=\sum_{i=1}^{n}(y-\hat{y})^{2}=\sum_{i=1}^{n}(y_{i}-\hat{\beta_{0}}-\hat{\beta_{1}}x_{1i}-\hat{\beta_{2}}x_{2i}-\dots-\hat{\beta_{k}}x_{ki})^{2}$$
 
 The variance $\sigma^2$ determines the amount of variability inherent in the regression model, or the Mean Squared Error (MSE). It is estimated using the following formula:
@@ -184,7 +184,7 @@ $H_{0i}:\beta_{i}=0, H_{ai}:\beta_{i}\neq0$
 
 ## Additional Analyses
 ### Stepwise regression
-Stepwise regression, a technique rooted in data mining, systematically selects predictors that minimize the Akaike Information Criterion (AIC), which serves as an index for the relative quality of statistical models. Although this method offers an efficient approach to refine regression models, it does not assure optimal results in any specific sense. Stepwise regression also culminates in a singular final model, overlooking the possibility of several models that could be equally valid. An additional limitation is its indifference to underlying theoretical considerations regarding predictors, potentially omitting vital variables during the optimization phase. For the purposes of this study, we only use stepwise regression primarily as a means to validate our model.
+Stepwise regression, a technique rooted in data mining, systematically selects predictors that minimize the Akaike Information Criterion (AIC), which serves as an index for the relative quality of statistical models. Although this method offers an efficient approach to refine regression models, it does not assure optimal results in any specific sense. Stepwise regression also culminates in a singular final model, overlooking the possibility of several models that could be equally valid. An additional limitation is its indifference to underlying theoretical considerations regarding predictors, potentially omitting vital variables during the optimization phase. For the purposes of this study, we use stepwise regression primarily as a means to validate our model.
 
 ### K-fold cross validation
 In k-fold cross-validation applied to a regression model, the dataset is randomly partitioned into k subsets of roughly equivalent size. The initial subset serves as the validation set while the model is trained using the remaining k−1 subsets. The mean squared error (MSE) is then computed for this first subset. This procedure is iteratively executed k times, each time designating a distinct subset as the validation set, resulting in k estimates of MSE.
@@ -343,7 +343,7 @@ top = "Histogram of log-transformed independent variables")
 ## Correlation matrix 
 The correlation matrix generally supports the conclusions based on the visual comparison of the predictor maps, but provides a more quantitative visualization of the relationships between the predictors. 
 
-There is presence of severe multicollinearity in this correlation matrix. In this correlation matrix, high correlations between certain pairs of variables are observed. For example, the correlation coefficient between MEDHHINC and PCTBACHMOR is 0.7, as well as the correlation coefficient between PCTBACHMOR and LNMEDHVAL. This result could indicate the possibility of multicollinearity. Additionally, the correlation coefficient between MEDHHINC and LNNBELPOV100 is 0.6 and the correlation coefficient between PCTVACANT and LNMEDHVAL is 0.5. These results of coefficients also hint at potential multicollinearity, suggesting that we should not include all of our independent variables in our final regression analysis. 
+There is presence of severe multicollinearity in this correlation matrix. In this correlation matrix, high correlations between certain pairs of variables are observed. For example, the correlation coefficient between MEDHHINC and PCTBACHMOR is 0.7, as well as the correlation coefficient between PCTBACHMOR and LNMEDHVAL. This result could indicate the possibility of multicollinearity. Additionally, the correlation coefficient between MEDHHINC and LNNBELPOV100 is 0.6 and the correlation coefficient between PCTVACANT and LNMEDHVAL is 0.5. These results of coefficients verify our suspicion of potential multicollinearity based on our maps, suggesting that we should not include all of our independent variables in our final regression analysis. 
  
 ```{r corr matrix, fig.height=8, fig.width=8, message=FALSE, warning=FALSE, cache=TRUE}
 
@@ -415,24 +415,25 @@ ggplot(dat.sf) +
 # Multiple Regression Analysis
 ## Regression results 
 
-The regression consists of:
-
-- the natural logarithm of median home value (LNMEDHVAL) regressed on percent of vacant house (PCTVACANT)
-- percent of single home units (PCTSINGLES)
-- percent of individuals with bachelor degree or higher (PCTBACHMOR)
-- households living in poverty (LNNBELPOV100) with natural log transformation
-
-The log-transformed regression model has a multiple $R^2$ of 0.6623 and adjusted $R^2$ of 0.6615, which means that approximately 66.23% of the log-transformed values of median home value can be explained by the predictors in the model. This $R^2$ indicates a moderately strong relationship between median home value and the model predictors.
+The regression consists of the natural logarithm of median home value (LNMEDHVAL) regressed on:
+- percent of vacant homes (PCTVACANT)  
+- percent of single home units (PCTSINGLES)  
+- percent of individuals with bachelor degree or higher (PCTBACHMOR)  
+- households living in poverty (LNNBELPOV100) with natural log transformation  
 
 ### Vacancy rate and households in poverty
 PCTVACANT and LNNBELPOV100 are negatively associated with median home value, indicating that increases in vacancy and poverty rate are associated with decreases in home prices.
 
-The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase in the percentage of vacant homes is associated with a decrease of 0.0191569 in the response variable of log-transformed median home value. Similarly, a 1-unit increase in the log-transformed share of households in poverty (LNNBELPOV100) is associated with a decrease of 0.0789054 in the median home value. In practical terms, a 1% increase in PCTVACANT and LNNBELPOV100 respectively lead to a \$191.57 and \$789.05 decrease in median home value.
+The estimate of PCTVACANT is -0.0191569, which demonstrates that a 1-unit increase (i.e., percentage point)  in the percentage of vacant homes is associated with a decrease of $\beta _{3}$ = 0.0191569 in the response variable of log-transformed median home value. Similarly, a 1-unit increase (i.e., percentage point) in the log-transformed share of households in poverty (LNNBELPOV100) is associated with a decrease of $\beta _{2}$ = 0.0789054 in the median home value. In practical terms, a 1% increase in PCTVACANT and LNNBELPOV100 respectively lead to a $\beta _{3}$ = \$191.57 and $\beta _{2}$ = \$789.05 decrease in median home value.
 
 ### Single homes and bachelors degrees
 PCTSINGLES and PCTBACHMOR are positively associated with median home value, meaning that increases in educational attainment and single homes are associated with increases in home prices. 
 
-PCTSINGLES and PCTBACHMOR have the estimates of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase in the percentage of single home units and the percentage of individuals with a bachelor's degree is individually associated with an increase of 0.0029769 and 0.209098 in log-transformed median home value. In other words, a 1% increase in PCTSINGLES and PCTBACHMOR respectively leads to a \$29.77 and \$209.10 increase in median home value.
+PCTSINGLES and PCTBACHMOR have the estimates of 0.0029769 and 0.209098 respectively, which implies that a 1-unit increase(i.e., percentage point) in the percentage of single home units and the percentage of individuals with a bachelor's degree is individually associated with an increase of $\beta _{4}$ = 0.0029769 and $\beta _{1}$ =  0.209098 in log-transformed median home value. In other words, a 1% increase in PCTSINGLES and PCTBACHMOR respectively leads to a $\beta _{4}$ = \$29.77 and $\beta _{1}$ = \$209.10 increase in median home value.
+
+
+The log-transformed regression model has a multiple $R^2$ of 0.6623 and adjusted $R^2$ of 0.6615, which means that approximately 66.23% of the log-transformed values of median home value can be explained by the predictors in the model. This $R^2$ indicates a moderately strong relationship between median home value and the model predictors. All of our four independent variables are also statistically significant, with p-values well below 0.001. This tells us that for all of our independent variables, the odds of them being equal to their respective beta coefficient estimates in the case that the null hypothesis $\H _{0}$ is true is less than 0.001. Given these low probabilities, we can reject the null hypothesis $\H _{0}$ that all of our beta coefficients are equal to zero in favor of the alternative hypothesis $\H _{a}$ that at least one of our beta coefficients is not equal to zero. The low p-value associated with the F-statistic tells us that we can reject the null hypothesis $\H _{0}$ that all of our beta coefficients are equal to zero.
+
 
 ### Accuracy
 The standard error measures the variability and precision of the estimate, with lower values indicating higher precision. The t value measures the strength of the relationship between the predictor and the dependent variable. Higher absolute t values indicate a stronger relationship. In this regression, PCTBACHMOR has the highest absolute t value of 38.494 indicating its strongest relationship with median home value, and PCTSINGLES has the lowest absolute t value of 4.234, meaning it has the weakest relationship with median home value.
@@ -496,7 +497,7 @@ ggplot(cor.long, aes(Value, LNMEDHVAL)) +
 
 ## Histogram of standardized residuals
 
-The following histogram shows the frequency distribution of standardized residuals. A standardized residual represents the original residual value divided by the standard deviation of all residuals, producing a standardized value that represents a given residual's distance from the line of best fit. Based on the shape of this distribution, we can estimate that residuals have a slight skew to the left, indicating that the median is greater than the mean.
+The following histogram shows the frequency distribution of standardized residuals. A standardized residual represents the original residual value divided by the standard deviation of all residuals, producing a standardized value that represents a given residual's distance from the line of best fit. Based on the shape of this distribution, we can estimate that residuals have a slight skew to the left and is not normal, indicating that the median is greater than the mean.
 
 ```{r resid hist, cache = TRUE}
 ggplot(dat.log, aes(standard_residuals)) +
@@ -524,7 +525,7 @@ ggplot(dat.log, aes(pred_values, standard_residuals)) +
   labs(title = "Standardized residuals") 
 ```
 
-Based on the previous maps of LNMEDHVAL and predictor variables across Philadelphia, there seems to be a great deal of spatial autocorrelation in our data. All variables show geospatial clustering to some extent, suggesting that block groups are not independent of each other with respect to these variable values and are likely spatially autocorrelated.
+Based on the previous maps of LNMEDHVAL and predictor variables across Philadelphia, there seems to be a great deal of spatial autocorrelation in our data. All variables show spatial clustering to some extent, suggesting that block groups are not independent of each other with respect to these variable values and are likely spatially auto-correlated.
 
 
 ## Chloropleth map of residuals
@@ -609,7 +610,7 @@ Using ordinary least squares regression, we sought to predict the median home va
 
 Our methodology involved an exploratory data analysis followed by a multiple regression analysis in adherence to the standard regression assumptions of linearity in our indicators, no multicollinearity, and homoscedasticity. We tested our model's validity through stepwise regression and k-folds cross-validation, applying the latter to a constrained model variant.
 
-Our final model yielded an adjusted \( R^2 \) of 0.66. This suggests that our selected predictors account for 66% of the variance in median home values at the census block group level in Philadelphia.
+Our final model yielded an adjusted \( R^2 \) of 0.66. This suggests that our selected predictors account for 66% of the variance in median home values at the census block group level in Philadelphia. All p-values associated with our beta coefficient estimates were less than 0.001, allowing us to reject the null hypothesis that all of our beta coefficients equal zero. This is not surprising, as all of the predictors are commonly known to be associated with home prices and are commonly discussed in academia and real estate. 
 
 ## **Key Findings**:
 
@@ -625,6 +626,7 @@ Our final model yielded an adjusted \( R^2 \) of 0.66. This suggests that our se
 - **Sample Bias**: Underrepresented groups such as those with lower income, socioeconomic status, non-English speakers, and minorities, are less likely to respond to the census, resulting in a sample bias which can skew certain variables associated with household demographics.
 - **Heteroscedasticity**: A non-constant variance (heteroscedasticity) was noted in the standard errors.
 - **Unexplained Variance**: The model doesn't account for approximately 33% of the variance in home values in Philadelphia block groups.
+- **Variable selection**: The model is also limited by our variable selection, specifically because we use the raw count of households living in poverty rather than the percentage. As a result, this variable may have an outsized effect in block groups with more households, since it's not normalized by population. 
 
 ## **Recommendations**:
 
