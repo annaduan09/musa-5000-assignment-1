@@ -1,0 +1,183 @@
+---
+title: "Assignment2"
+author: "Anna, Jingyi, Jamie"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache = TRUE)
+
+options(scipen=999)
+
+#install.packages(c("sp", "sf" "rgdal", "rgeos", "spdep", "spgwr", "tmap", "spatialreg", "lmtest", "whitestrap", "tseries"))
+                 
+library(sf)
+#library(rgeos)
+library(spdep)
+library(spgwr)
+library(tmap)
+library(spatialreg)
+library(whitestrap)
+library(lmtest)
+library(tseries)
+```
+
+## Data cleaning and processing
+
+
+```{r regression data shp}
+shp <-st_read(dsn ="C:/Users/songj/OneDrive/Documents/GitHub/musa-5000-assignment-1/regression data shapefile/RegressionData.shp")
+
+shp$LNMEDHVAL <- log(shp$MEDHVAL + 1)
+shp$LNMEDHHINC <- log(shp$MEDHHINC + 1)
+shp$LNPCTVACANT <- log(shp$PCTVACANT + 1)
+
+
+```
+
+## Regression Analysis: Geographically Weighted Regression
+### **Bandwidth Selection**
+Unlike the OLS, SL and SE Models, GWR allows for spatial non-stationarity. It is based on the premise that the relationships between variables aren't the same at all spatial locations.
+
+Although for the previous analyses, we define **neighbors**, for the GWR analyses, we will define **bandwidths**. The bandwidth can be manually entered by the user, or it can be determined by R through cross-validation. Here, we will be using the `spgwr` package in R to carry out the bandwidth selection and run GWR.
+
+We will use the `gwr.sel` function to calculate the optimal bandwidth for GWR. Let’s examine the parameters specified in the code below.
+
+`formula`: We specify the OLS regression model formula we used in our OLS Model above. This is because a separate OLS equation for every location in the dataset in a GWR Model, and these separate OLS equations incorporate the dependent and explanatory variables of locations falling within the bandwidth of each target location.
+
+`data`: You can specify a dataframe here, or a `SpatialPointsDataFrame` or `SpatialPolgonsDataframe` object that was defined in the package `sp`.
+
+`coords`: If you specified a non-spatial dataframe above, it is neccessary to include a matrix of coordinates of points or polygons that represents the spatial positions of the observations. However, specification for this parameter is not neccessary if you specified a spatial dataframe, as was done for this example. Here, we specified a `SpatialPointsDataFrame`.
+
+`method`: Here, you specify how an ‘optimal’ bandwidth should be defined. AIC is the approach used here to select a bandwidth that optimises the model AICc (corrected AIC), which is a relative measure of goodness of model fit. Another method you can specify here is cv, which selects a bandwidth that allows for the GWR results to be approximately equal acoss cross-validated folds - here, your objective is a generalisable GWR Model. 
+
+`adapt`: TRUE returns a proportion between 0 and 1 of the observations to include in the weighting scheme for an adaptive bandwidth. On the other hand, if a global fixed bandwidth that remains constant for all locations suit your purpose, set this parameter as FALSE.
+
+Let's start with **adaptive bandwidth**, which varies the distance, but fixes the number of neighbors for each observation. Given that we specified a preference for an adaptive bandwidth optimized based on AICc, the output (despite its labels) is not a distance, but rather, the proportion of observations to be included for each location in the GWR Model. Here, it is recommended that 0.007862703 (or ~0.786%) of the observations be used for each location - the bandwidth should be adapted to capture about 13 observations (0.00786*1720) for each location. You might think this is too few observations to be fitted for each local regression - in this case, the printed AICc measures can serve as a guidance for the proportion you may input in the GWR Model later on. Keep in mind that finding the optimal value of bandwidth takes a while, so be patient while the code runs.
+
+```{r warning=FALSE, message=FALSE, cache=FALSE}
+#Setting an adaptive bandwidth
+shps <- as(shp, 'Spatial')  #These analyses are easier to do when the data are of the SpatialPolygonsDataFrame class
+class (shps)
+bw<-gwr.sel(formula=LNMEDHHINC~LNMEDHVAL+PCTVACANT, 
+            data=shps,
+            method = "aic",
+            adapt = TRUE)
+#run the code below to do the same thing as code above
+#bw<-0.007862703
+bw
+```
+
+We might also want to create a **fixed bandwidth**. Notice that the output values more closely approximate distance (in the units of the shapfile, i.e., feet) instead of a proportion between 0 and 1.
+
+```{r warning=FALSE, message=FALSE, cache=FALSE}
+#setting a fixed bandwidth
+bw_fixed<-gwr.sel(formula=LNMEDHHINC~LNMEDHVAL+PCTVACANT, 
+            data=shps,
+            method = "aic",
+            adapt = FALSE)
+#run the code below to do the same thing as code above
+#bw_fixed <- 2725.108
+bw_fixed
+```
+
+
+**Running GWR**
+To fit a GWR Model, we use the command `gwr`. Again, specify the formula as used in the previous OLS Model and the bandwidth defined in the earlier step.
+
+We can also set a geographical weighting function for the bandwidth to specify how observations of varying distances from the location should be accounted for. If `gweight=gwr.Gauss`, the weights allocated to distributions vary normally like in a Gaussian (i.e., normal) distribution. If `gwr.bisquare` is specified, observations within the a certain distance threshold (specified by the bandwidth) from the location are weighted as 1, while observations beyond this threshold are weighted as 0.
+
+We can compare the outputs from using an adaptive bandwidth specified by the proportion of observations included in each local regression ` (adapt=bw)`, and a fixed bandwidth ` (bandwidth=bw_fixed)`.
+
+Below are the results using the **adaptive bandwidth**. 
+```{r warning=FALSE, message=FALSE, cache=FALSE}
+gwrmodel<-gwr(formula=LNMEDHHINC~LNMEDHVAL+PCTVACANT,
+              data=shps,
+              adapt = bw, #adaptive bandwidth determined by proportion of observations accounted for
+              gweight=gwr.Gauss,
+              se.fit=TRUE, #to return local standard errors
+              hatmatrix = TRUE)
+gwrmodel
+```
+
+Below are the results using the **fixed bandwidth**.
+```{r warning=FALSE, message=FALSE, cache=FALSE}
+gwrmodel_fixed<-gwr(formula=LNMEDHHINC~LNMEDHVAL+PCTVACANT,
+              data=shps,
+              bandwidth = bw_fixed, #fixed bandwidth
+              gweight=gwr.Gauss,
+              se.fit=TRUE, #to return local standard errors
+              hatmatrix = TRUE)
+gwrmodel_fixed
+```
+
+Notice that when we construct our GWR Model, the output from `gwr.sel` (where `adapt=TRUE`) should be specified for the parameter `adapt`. On the other hand, if we were interested in a fixed bandwidth, the output from `gwr.sel` (where `adapt=FALSE`) should be specified for the parameter `bandwidth`. Also notice the difference in the results. We seem to be getting a better fit (based on AIC), less error (based on Residual sum of squares), and a slightly better global R^2^ using the GWR Model with an adaptive bandwidth. **Keep in mind that when comparing the GWR Model to OLS, Spatial Lag and Spatial Error, you should use the AIC and not the AICc.**
+
+**Presenting GWR Output Using Adaptive Bandwidth**
+We can look at a summary of the coefficients of the local regressions, stored in the `SDF` object within `thegwrmodel`. Note in particular the minimum and maximum values of the Local R^2^ (0.05789 - 0.75169). There are no negative values, meaning that this output, unlike the output we get in some versions of ArcGIS Pro, is correct.
+
+```{r warning=FALSE, message=FALSE, cache=FALSE}
+summary(gwrmodel$SDF)
+```
+
+We can also map the standardized coefficients. The higher the absolute value of the ratio between the coefficient and the standard error, the more plausible it is that the relationship between the predictor and the dependent variable is significant at the location.
+```{r warning=FALSE, message=FALSE, cache=FALSE}
+gwrresults<-as.data.frame(gwrmodel$SDF)
+shps$coefLNMEDHVALst<-gwrresults$LNMEDHVAL/gwrresults$LNMEDHVAL_se
+shps$coefPCTVACANTst<-gwrresults$PCTVACANT/gwrresults$PCTVACANT_se
+
+shps$gwrE<-gwrresults$gwr.e
+shps$localR2<-gwrresults$localR2
+
+coefLNMEDHVAL<-tm_shape(shps)+
+  tm_fill(col='coefLNMEDHVALst', breaks=c(-Inf, -6, -4, -2, 0, 2, 4, 6, Inf), title='Standardized coefficient of LNMEDHVAL', 
+          palette ='-RdBu')+
+  tm_layout(frame=FALSE, title = 'Median House Value (Log)')
+
+coefPCTVACANT<-tm_shape(shps)+
+  tm_fill(col='coefPCTVACANTst', breaks=c(-Inf, -6, -4, -2, 0, 2, 4, 6, Inf), title='Standardized coefficient of PCTVACANT', 
+          palette='-RdBu')+
+  tm_layout(frame=FALSE, title = 'Percentage of Housing Vacant')
+
+tmap_arrange(coefLNMEDHVAL, coefPCTVACANT, ncol=2)
+```
+
+And we can also look at the spatial distribution of the local R-squares. We can see that the two predictors do a good job explaining the variance in our dependent variable in NW Philadelphia, but not in many other parts of the city.
+```{r warning=FALSE, message=FALSE, cache=FALSE}
+tm_shape(shps)+
+  tm_fill(col='localR2',  breaks=c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7), n=5, palette = 'Blues')+
+  tm_layout(frame=FALSE)
+```
+
+
+Finally, we can also look at the spatial autocorrelation in GWR residuals. This exercise is left for the student (spoiler alert: there's much less autocorrelation in GWR residuals than in OLS residuals). Note that the residuals are extracted above using the command ` shp$gwrE<-gwrresults$gwr.e`. 
+
+## Model comparison (exercise is left for the student)
+We can do the following to compare all 4 models: 
+
+1. Look at the Moran's I of the residuals from each model and choose the model with the lowest (absolute) Moran's I
+
+2. Compare the AIC values from each model and choose the model with the lowest value
+
+
+In addition, we can do the following to compare the Spatial Lag Model to OLS:
+
+1. Compare the log likelihoods; the model with the higher value is the better one.
+
+2. Examine the results of the likelihood ratio test; if it's significant, the Spatial Lag Model is better than OLS.
+
+
+In addition, we can do the following to compare the Spatial Error Model to OLS:
+
+1. Compare the log likelihoods; the model with the higher value is the better one.
+
+2. Examine the results of the likelihood ratio test; if it's significant, the Spatial Error Model is better than OLS.
+
+
+Lastly, we can also do the following to compare GWR to OLS:
+
+1. Compare the R^2^ from OLS with the Quasi-global R^2^ from GWR; the model with the higher value is the better one.
+
+2. Examine whether there's spatial variability in standardized coefficients or local R^2^ values. If there is, it might mean that a single global regression might not capture the varying spatial relationships between the dependent variable and the predictors.
