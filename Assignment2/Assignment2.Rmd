@@ -143,12 +143,59 @@ coefPCTVACANT<-tm_shape(shps)+
 
 tmap_arrange(coefLNMEDHVAL, coefPCTVACANT, ncol=2)
 ```
+## Local R-squared map
 
 And we can also look at the spatial distribution of the local R-squares. We can see that the two predictors do a good job explaining the variance in our dependent variable in NW Philadelphia, but not in many other parts of the city.
 ```{r warning=FALSE, message=FALSE, cache=FALSE}
 tm_shape(shps)+
   tm_fill(col='localR2',  breaks=c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7), n=5, palette = 'Blues')+
   tm_layout(frame=FALSE)
+```
+## Local Moran's I
+> in progress
+
+```{r local morans i}
+queen<-poly2nb(shp, row.names=shp$POLY_ID)
+queenlist<-nb2listw(queen, style = 'W')
+moran(shp$LNMEDHHINC, queenlist, n=length(queenlist$neighbours), S0=Szero(queenlist))$`I` 
+
+LISA<-localmoran(shp$LNMEDHHINC, queenlist)
+head(LISA)
+df.LISA <-cbind(shp, as.data.frame(LISA))
+
+moranSig.plot<-function(df,listw, title){
+  local<-localmoran(x=df$LNMEDHHINC, listw=listw, zero.policy = FALSE)
+  moran.map<-cbind(df, local)
+  #Here, col='Pr.z....E.Ii..' is the name of the column in the dataframe df.LISA that we're trying to plot. This variable name might change based on the version of the package.
+  tm<-tm_shape(moran.map)+
+    tm_borders(col='white')+
+    tm_fill(style='fixed', col='Pr.z....E.Ii..', breaks=c(0,0.001, 0.01, 0.05, 1), title= 'p-value', palette = '-BuPu')+
+    tm_layout(frame = FALSE, title = title)
+  print(tm)
+}
+moranSig.plot(df.LISA, queenlist, 'p-value')
+
+hl.plot<-function(df, listw){
+  local<-localmoran(x=df$LNMEDHHINC, listw=listw, zero.policy = FALSE)
+  quadrant<-vector(mode='numeric', length=323)
+  m.prop<-df$LNMEDHHINC - mean(df$LNMEDHHINC)
+  m.local<-local[,1]-mean(local[,1])
+  signif<-0.05
+  quadrant[m.prop >0 & m.local>0]<-4 #high MEDHHINC, high clustering
+  quadrant[m.prop <0 & m.local<0]<-1 #low MEDHHINC, low clustering
+  quadrant[m.prop <0 & m.local>0]<-2 #low MEDHINC, high clustering
+  quadrant[m.prop >0 & m.local<0]<-3 #high MEDHHINC, low clustering
+  quadrant[local[,5]>signif]<-0
+  
+  brks <- c(0,1,2,3,4)
+  colors <- c("grey","light blue",'blue','pink',"red")
+  plot<-plot(shp$geometry,border="gray90",lwd=1.0,col=colors[findInterval(quadrant,brks,all.inside=FALSE)])
+}
+
+hl.plot(shp, queenlist)
+legend("bottomright",legend=c("insignificant","low-high","low-low","high-low","high-high"),
+       fill=c("grey", "light blue", "blue", "pink", "red"),bty="n", cex = 0.5)
+
 ```
 
 
