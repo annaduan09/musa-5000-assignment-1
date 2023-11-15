@@ -34,7 +34,6 @@ shp$LNMEDHVAL <- log(shp$MEDHVAL + 1)
 shp$LNMEDHHINC <- log(shp$MEDHHINC + 1)
 shp$LNPCTVACANT <- log(shp$PCTVACANT + 1)
 
-
 ```
 
 ## Regression Analysis: Geographically Weighted Regression
@@ -61,12 +60,12 @@ Let's start with **adaptive bandwidth**, which varies the distance, but fixes th
 #Setting an adaptive bandwidth
 shps <- as(shp, 'Spatial')  #These analyses are easier to do when the data are of the SpatialPolygonsDataFrame class
 class (shps)
-bw<-gwr.sel(formula=LNMEDHHINC~LNMEDHVAL+PCTVACANT, 
+bw<-gwr.sel(formula=LNMEDHHINC~LNNBELPOV+LNMEDHVAL+PCTVACANT+PCTSINGLES, 
             data=shps,
             method = "aic",
             adapt = TRUE)
 #run the code below to do the same thing as code above
-#bw<-0.007862703
+#bw<-0.01109133
 bw
 ```
 
@@ -74,12 +73,12 @@ We might also want to create a **fixed bandwidth**. Notice that the output value
 
 ```{r warning=FALSE, message=FALSE, cache=FALSE}
 #setting a fixed bandwidth
-bw_fixed<-gwr.sel(formula=LNMEDHHINC~LNMEDHVAL+PCTVACANT, 
+bw_fixed<-gwr.sel(formula=LNMEDHHINC~LNNBELPOV+LNMEDHVAL+PCTVACANT+PCTSINGLES, 
             data=shps,
             method = "aic",
             adapt = FALSE)
 #run the code below to do the same thing as code above
-#bw_fixed <- 2725.108
+#bw_fixed <- 3817.227
 bw_fixed
 ```
 
@@ -93,7 +92,7 @@ We can compare the outputs from using an adaptive bandwidth specified by the pro
 
 Below are the results using the **adaptive bandwidth**. 
 ```{r warning=FALSE, message=FALSE, cache=FALSE}
-gwrmodel<-gwr(formula=LNMEDHHINC~LNMEDHVAL+PCTVACANT,
+gwrmodel<-gwr(formula=LNMEDHHINC~LNNBELPOV+LNMEDHVAL+PCTVACANT+PCTSINGLES,
               data=shps,
               adapt = bw, #adaptive bandwidth determined by proportion of observations accounted for
               gweight=gwr.Gauss,
@@ -104,7 +103,7 @@ gwrmodel
 
 Below are the results using the **fixed bandwidth**.
 ```{r warning=FALSE, message=FALSE, cache=FALSE}
-gwrmodel_fixed<-gwr(formula=LNMEDHHINC~LNMEDHVAL+PCTVACANT,
+gwrmodel_fixed<-gwr(formula=LNMEDHHINC~LNNBELPOV+LNMEDHVAL+PCTVACANT+PCTSINGLES,
               data=shps,
               bandwidth = bw_fixed, #fixed bandwidth
               gweight=gwr.Gauss,
@@ -154,11 +153,24 @@ tm_shape(shps)+
 ## Local Moran's I
 > in progress
 
-```{r local morans i}
+```{r queens}
 queen<-poly2nb(shp, row.names=shp$POLY_ID)
 queenlist<-nb2listw(queen, style = 'W')
 moran(shp$LNMEDHHINC, queenlist, n=length(queenlist$neighbours), S0=Szero(queenlist))$`I` 
+```
 
+```{r random permutations with global morans i}
+moranMC<-moran.mc(shp$LNMEDHHINC, queenlist, nsim=999, alternative="two.sided")  #We use 999 permutations
+moranMC
+
+moranMCres<-moranMC$res
+hist(moranMCres, freq=10000000, nclass=100)   #Draws distribution of Moran's I's calculated from randomly permuted values
+# Here, we draw a red vertical line at the observed value of our Moran's I
+abline(v=moran(shp$LNMEDHHINC, queenlist, n=length(queenlist$neighbours), S0=Szero(queenlist))$`I`, col='red')
+
+```
+
+```{r local morans i}
 LISA<-localmoran(shp$LNMEDHHINC, queenlist)
 head(LISA)
 df.LISA <-cbind(shp, as.data.frame(LISA))
