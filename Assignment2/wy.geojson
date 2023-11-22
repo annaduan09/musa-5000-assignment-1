@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "wy",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4269" } },
+"features": [
+{ "type": "Feature", "properties": { "STATEFP": "56", "COUNTYFP": "033", "COUNTYNS": "01605081", "GEOID": "56033", "NAME": "Sheridan", "NAMELSAD": "Sheridan County", "LSAD": "06", "CLASSFP": "H1", "MTFCC": "G4020", "CSAFP": null, "CBSAFP": null, "METDIVFP": null, "FUNCSTAT": "A", "ALAND": 6535475074.0, "AWATER": 7986330.0, "INTPTLAT": "+44.7813692", "INTPTLON": "-106.8812114" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -107.383, 44.87 ], [ -107.16, 44.87 ], [ -107.16, 45.0 ], [ -107.383, 45.0 ], [ -107.383, 44.87 ] ] ] } }
+]
+}

@@ -15,7 +15,7 @@ For the example here, we will be using the files used for HW 1 and HW2. We will 
 Prior to running anything, we will set the working directory below. You may change it to where the files are stored on your computer.
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir = "C:\\Users\\eugeneby\\Dropbox\\Documents\\Work and School\\Teaching\\CPLN 671 - Statistics and Data Mining\\Homework Assignments\\HW 2")
+knitr::opts_knit$set(root.dir = "/Users/annaduan/Desktop/GitHub/musa-5000-assignment-1/musa-5000-assignment-1/Assignment2/lecture\ 14\ data/Regression\ Data.shp")
 ```
 
 
@@ -46,7 +46,7 @@ Now, let's read in the ` Regression Data` shapefile from our working directory.
 Here, we are essentially creating a ` SpatialPolygonDataFrame` from the ` Regression Data` shapefile using the ` readOGR` function. Here, the ` '.'` refers to the set working directory, which was specified earlier - if your shapefile is contained within another folder, just insert the path instead. Using the ` @data` command, We can examine the attributes of ` shp`.
 
 ```{r warning=FALSE, message=FALSE, cache=FALSE}
-shp <-st_read(dsn ="C:\\Users\\eugeneby\\Dropbox\\Documents\\Work and School\\Teaching\\CPLN 671 - Statistics and Data Mining\\2023_MUSA_5000_GitHub\\Homework Assignments\\HW 1\\Lecture 1 - RegressionData.shp")
+shp <-st_read(dsn ="/Users/annaduan/Desktop/GitHub/musa-5000-assignment-1/musa-5000-assignment-1/Assignment2/lecture\ 14\ data/Regression\ Data.shp")
 ```
 
 Before proceeding, let's examine the distributions of our variables and see whether we need to create log transformations of any of them.

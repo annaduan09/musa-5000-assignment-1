@@ -28,7 +28,8 @@ library(tseries)
 
 
 ```{r regression data shp}
-shp <-st_read(dsn ="C:/Users/songj/OneDrive/Documents/GitHub/musa-5000-assignment-1/regression data shapefile/RegressionData.shp")
+# shp <-st_read(dsn ="C:/Users/songj/OneDrive/Documents/GitHub/musa-5000-assignment-1/regression data shapefile/RegressionData.shp")
+shp <- st_read("/Users/annaduan/Desktop/GitHub/musa-5000-assignment-1/musa-5000-assignment-1/regression\ data\ shapefile/RegressionData.shp")
 
 shp$LNMEDHVAL <- log(shp$MEDHVAL + 1)
 shp$LNMEDHHINC <- log(shp$MEDHHINC + 1)
@@ -160,13 +161,46 @@ moran(shp$LNMEDHHINC, queenlist, n=length(queenlist$neighbours), S0=Szero(queenl
 ```
 
 ```{r random permutations with global morans i}
-moranMC<-moran.mc(shp$LNMEDHHINC, queenlist, nsim=999, alternative="two.sided")  #We use 999 permutations
+# moranMC<-moran.mc(shp$LNMEDHHINC, queenlist, nsim=999, alternative="two.sided")  #We use 999 permutations
+
+shp$lagged_residuals <- lag.listw(queenlist, gwrmodel$lm$residuals)
+shp$residuals <- gwrmodel$lm$residuals
+
+ggplot(shp, aes(x = residuals, y = lagged_residuals)) + 
+  theme_minimal() + 
+  geom_point(alpha = 0.5) + 
+  geom_smooth(method = "lm", color = "red")
+
+# moran's I of gwr model residuals
+moranMC <- moran.mc(gwrmodel$lm$residuals, queenlist, nsim = 999, alternative = "two.sided")
 moranMC
 
 moranMCres<-moranMC$res
-hist(moranMCres, freq=10000000, nclass=100)   #Draws distribution of Moran's I's calculated from randomly permuted values
-# Here, we draw a red vertical line at the observed value of our Moran's I
-abline(v=moran(shp$LNMEDHHINC, queenlist, n=length(queenlist$neighbours), S0=Szero(queenlist))$`I`, col='red')
+
+# Convert it to a data frame for ggplot
+moran_df <- data.frame(MoranI = moranMCres)
+
+# Calculate the observed Moran's I value
+observed_moran <- moran(shp$LNMEDHHINC, queenlist, n=length(queenlist$neighbours), S0=Szero(queenlist))$I
+
+# histogram
+ggplot(moran_df, aes(x = MoranI)) + 
+  geom_histogram(bins = 100, fill = "blue", alpha = 0.7) +
+  geom_vline(xintercept = observed_moran, color = "red", size = 1) +
+  theme_minimal() +
+  labs(title = "Histogram of Moran's I", x = "Moran's I", y = "Frequency")
+
+# scatter 
+plot_moran(gwrmodel,
+  point.color = viridis::viridis(
+    100,
+    option = "F",
+    direction = -1
+   ),
+  line.color = "gray30",
+  option = 1,
+  ncol = 1,
+  verbose = TRUE)
 
 ```
 
