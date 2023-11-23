@@ -125,6 +125,7 @@ summary(gwrmodel$SDF)
 We can also map the standardized coefficients. The higher the absolute value of the ratio between the coefficient and the standard error, the more plausible it is that the relationship between the predictor and the dependent variable is significant at the location.
 ```{r warning=FALSE, message=FALSE, cache=FALSE}
 gwrresults<-as.data.frame(gwrmodel$SDF)
+
 shps$coefLNMEDHVALst<-gwrresults$LNMEDHVAL/gwrresults$LNMEDHVAL_se
 shps$coefPCTVACANTst<-gwrresults$PCTVACANT/gwrresults$PCTVACANT_se
 
@@ -147,8 +148,9 @@ tmap_arrange(coefLNMEDHVAL, coefPCTVACANT, ncol=2)
 
 And we can also look at the spatial distribution of the local R-squares. We can see that the two predictors do a good job explaining the variance in our dependent variable in NW Philadelphia, but not in many other parts of the city.
 ```{r warning=FALSE, message=FALSE, cache=FALSE}
+
 tm_shape(shps)+
-  tm_fill(col='localR2',  breaks=c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7), n=5, palette = 'Blues')+
+  tm_fill(col='localR2',  breaks=c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7), n=5, palette = 'YlGnBu')+
   tm_layout(frame=FALSE)
 ```
 ## Local Moran's I
@@ -161,11 +163,13 @@ moran(shp$LNMEDHHINC, queenlist, n=length(queenlist$neighbours), S0=Szero(queenl
 ```
 
 ```{r random permutations with global morans i}
-# moranMC<-moran.mc(shp$LNMEDHHINC, queenlist, nsim=999, alternative="two.sided")  #We use 999 permutations
-
+# lagged GWR residuals
 shp$lagged_residuals <- lag.listw(queenlist, gwrmodel$lm$residuals)
+
+# GWR residuals
 shp$residuals <- gwrmodel$lm$residuals
 
+# plot lagged residuals vs residuals
 ggplot(shp, aes(x = residuals, y = lagged_residuals)) + 
   theme_minimal() + 
   geom_point(alpha = 0.5) + 
@@ -244,33 +248,51 @@ legend("bottomright",legend=c("insignificant","low-high","low-low","high-low","h
 
 ```
 
+## Map of coeff/SE     
 
-Finally, we can also look at the spatial autocorrelation in GWR residuals. This exercise is left for the student (spoiler alert: there's much less autocorrelation in GWR residuals than in OLS residuals). Note that the residuals are extracted above using the command ` shp$gwrE<-gwrresults$gwr.e`. 
+```{r maps of coefficients divided by the standard error}
+gwr_results.sf <- gwrmodel$SDF %>%
+  st_as_sf() 
 
-## Model comparison (exercise is left for the student)
-We can do the following to compare all 4 models: 
+# intercept
+ggplot() + 
+  geom_sf(data = gwr_results.sf, aes(fill = X.Intercept./X.Intercept._se), color = NA) + 
+  scale_fill_distiller(palette = "YlGnBu") +
+  labs(title = "Coefficient/standard error ratio: X-intercept", fill = "Ratio") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2))
 
-1. Look at the Moran's I of the residuals from each model and choose the model with the lowest (absolute) Moran's I
+# pct single
+ggplot() + 
+  geom_sf(data = gwr_results.sf, aes(fill = PCTSINGLES/PCTSINGLES_se), color = NA) + 
+  scale_fill_distiller(palette = "YlGnBu") +
+  labs(title = "Coefficient/standard error ratio: Pct Single Homes", fill = "Ratio") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2))
 
-2. Compare the AIC values from each model and choose the model with the lowest value
+# below poverty
+ggplot() + 
+  geom_sf(data = gwr_results.sf, aes(fill = LNNBELPOV/LNNBELPOV_se), color = NA) + 
+  scale_fill_distiller(palette = "YlGnBu") +
+  labs(title = "Coefficient/standard error ratio: Household in poverty", fill = "Ratio") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2))
 
+# vacant
+ggplot() + 
+  geom_sf(data = gwr_results.sf, aes(fill = PCTVACANT/PCTVACANT_se), color = NA) + 
+  scale_fill_distiller(palette = "YlGnBu") +
+  labs(title = "Coefficient/standard error ratio: Pct Vacant", fill = "Ratio") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2))
 
-In addition, we can do the following to compare the Spatial Lag Model to OLS:
+# medhval
+ggplot() + 
+  geom_sf(data = gwr_results.sf, aes(fill = LNMEDHVAL/LNMEDHVAL_se), color = NA) + 
+  scale_fill_distiller(palette = "YlGnBu") +
+  labs(title = "Coefficient/standard error ratio: Median home value", fill = "Ratio") +
+  theme_void() +
+  theme(legend.position = c(0.8, 0.2))
 
-1. Compare the log likelihoods; the model with the higher value is the better one.
+```
 
-2. Examine the results of the likelihood ratio test; if it's significant, the Spatial Lag Model is better than OLS.
-
-
-In addition, we can do the following to compare the Spatial Error Model to OLS:
-
-1. Compare the log likelihoods; the model with the higher value is the better one.
-
-2. Examine the results of the likelihood ratio test; if it's significant, the Spatial Error Model is better than OLS.
-
-
-Lastly, we can also do the following to compare GWR to OLS:
-
-1. Compare the R^2^ from OLS with the Quasi-global R^2^ from GWR; the model with the higher value is the better one.
-
-2. Examine whether there's spatial variability in standardized coefficients or local R^2^ values. If there is, it might mean that a single global regression might not capture the varying spatial relationships between the dependent variable and the predictors.
